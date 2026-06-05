@@ -859,11 +859,6 @@ class CardBookPanel extends HTMLElement {
     off.height   = OUT;
     const ctx    = off.getContext("2d");
 
-    // Clip to circle
-    ctx.beginPath();
-    ctx.arc(OUT / 2, OUT / 2, OUT / 2, 0, Math.PI * 2);
-    ctx.clip();
-
     // Source rect in original image pixels
     const invScale = 1 / this._cropScale;
     const srcX     = (this._cropCX - this._cropR) * invScale;
