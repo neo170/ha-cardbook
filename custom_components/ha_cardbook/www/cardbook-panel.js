@@ -89,7 +89,7 @@ class CardBookPanel extends HTMLElement {
             <ha-icon icon="mdi:arrow-left"></ha-icon>
           </ha-icon-button>
           <div class="topbar-title">
-            <ha-icon icon="mdi:book-account"></ha-icon>
+            <ha-icon icon="mdi:card-account-details-outline"></ha-icon>
             <span>CardBook</span>
           </div>
           <div class="header-actions">
