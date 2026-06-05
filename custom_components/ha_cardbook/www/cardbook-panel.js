@@ -1132,7 +1132,7 @@ class CardBookPanel extends HTMLElement {
       .fn-display  { margin: 0 0 4px; font-size: 22px; font-weight: 500; }
       .fn-name-row { display: flex; align-items: center; gap: 6px; }
       .header-org  { color: var(--secondary-text-color, #757575); margin-bottom: 10px; }
-      .copy-wrap { display: inline-flex; align-items: center; gap: 4px; max-width: 100%; }
+      .copy-wrap { display: inline-flex; align-items: center; gap: 8mm; max-width: 100%; }
       .btn-copy-inline {
         opacity: 0; flex-shrink: 0; background: none; border: none; cursor: pointer;
         color: var(--secondary-text-color, #9e9e9e); padding: 2px; border-radius: 3px;
@@ -1141,7 +1141,7 @@ class CardBookPanel extends HTMLElement {
       }
       .copy-wrap:hover .btn-copy-inline,
       .fn-name-row:hover .btn-copy-inline { opacity: 1; }
-      .btn-copy-inline:hover { background: rgba(0,0,0,0.06); color: var(--primary-text-color, #212121); }
+      .btn-copy-inline:hover { background: rgba(0,0,0,0.03); color: var(--primary-text-color, #212121); }
       .header-actions { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 10px; }
 
       /* ── Buttons ──────────────────────────────────────────────────────── */
