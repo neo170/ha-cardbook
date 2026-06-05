@@ -423,11 +423,11 @@ class CardBookPanel extends HTMLElement {
                </div>
                ${c.org   ? `<div class="header-org">${_esc(c.org)}${c.title ? " · " + _esc(c.title) : ""}</div>` : ""}
                <div class="header-actions">
-                 <button class="btn-primary" id="btn-edit">&#9998; Bearbeiten</button>
-                 <button class="btn-danger"  id="btn-delete"><ha-icon icon="mdi:trash-can-outline" style="--mdi-icon-size:16px;vertical-align:middle;margin-right:4px"></ha-icon>Löschen</button>
+                 <button class="btn-primary" id="btn-edit"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;margin-right:4px"><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"/></svg>Bearbeiten</button>
+                 <button class="btn-danger"  id="btn-delete"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;margin-right:4px"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4h6v2"/></svg>Löschen</button>
                </div>`
             : `<div class="header-actions">
-                 <button class="btn-primary" id="btn-save"><ha-icon icon="mdi:content-save-outline" style="--mdi-icon-size:16px;vertical-align:middle;margin-right:4px"></ha-icon>Speichern</button>
+                 <button class="btn-primary" id="btn-save">&#10003; Speichern</button>
                  <button class="btn-secondary" id="btn-cancel">&#10005; Abbrechen</button>
                </div>`
           }
