@@ -1130,9 +1130,9 @@ class CardBookPanel extends HTMLElement {
 
       .header-name { flex: 1; }
       .fn-display  { margin: 0 0 4px; font-size: 22px; font-weight: 500; }
-      .fn-name-row { display: flex; align-items: center; gap: 6px; }
+      .fn-name-row { display: flex; align-items: center; gap: 6mm; }
       .header-org  { color: var(--secondary-text-color, #757575); margin-bottom: 10px; }
-      .copy-wrap { display: inline-flex; align-items: center; gap: 8mm; max-width: 100%; }
+      .copy-wrap { display: inline-flex; align-items: center; gap: 6mm; max-width: 100%; }
       .btn-copy-inline {
         opacity: 0; flex-shrink: 0; background: none; border: none; cursor: pointer;
         color: var(--secondary-text-color, #9e9e9e); padding: 2px; border-radius: 3px;
