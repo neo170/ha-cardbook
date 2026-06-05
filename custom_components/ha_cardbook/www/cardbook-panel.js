@@ -6,7 +6,7 @@
 const EMAIL_TYPES  = ["internet", "home", "work", "other"];
 const PHONE_TYPES  = ["cell", "home", "work", "voice", "fax", "pager", "other"];
 const ADDRESS_TYPES = ["home", "work", "other"];
-const COPY_ICON = `<ha-icon icon="mdi:content-copy"></ha-icon>`;
+const COPY_ICON = `<ha-icon icon="mdi:content-copy" style="--mdi-icon-size:14px"></ha-icon>`;
 
 const EMPTY_CONTACT = () => ({
   uid: "",
@@ -149,7 +149,7 @@ class CardBookPanel extends HTMLElement {
             <button class="icon-btn" id="btn-crop-smaller" title="Kleiner">&#8722;</button>
             <span class="crop-size-label">Ausschnitt</span>
             <button class="icon-btn" id="btn-crop-larger"  title="Größer">&#43;</button>
-            <button class="btn-secondary" id="btn-crop-paste" title="Bild aus Zwischenablage"><ha-icon icon="mdi:clipboard-outline"></ha-icon>Einfügen</button>
+            <button class="btn-secondary" id="btn-crop-paste" title="Bild aus Zwischenablage"><ha-icon icon="mdi:clipboard-outline" style="--mdi-icon-size:14px"></ha-icon>Einfügen</button>
           </div>
           <div class="crop-actions">
             <button class="btn-primary"   id="btn-crop-confirm">&#10003; Übernehmen</button>
@@ -409,8 +409,8 @@ class CardBookPanel extends HTMLElement {
         <div class="photo-wrap">
           ${photo}
           ${edit ? `
-            <button class="photo-btn" id="btn-photo-upload" title="Foto hochladen"><ha-icon icon="mdi:camera"></ha-icon></button>
-            <button class="photo-btn photo-btn-paste" id="btn-photo-paste" title="Aus Zwischenablage (Strg+V)"><ha-icon icon="mdi:clipboard-outline"></ha-icon></button>
+            <button class="photo-btn" id="btn-photo-upload" title="Foto hochladen"><ha-icon icon="mdi:camera" style="--mdi-icon-size:14px"></ha-icon></button>
+            <button class="photo-btn photo-btn-paste" id="btn-photo-paste" title="Aus Zwischenablage (Strg+V)"><ha-icon icon="mdi:clipboard-outline" style="--mdi-icon-size:14px"></ha-icon></button>
             ${c.photo ? `<button class="photo-btn photo-btn-del" id="btn-photo-remove" title="Foto entfernen">&#10005;</button>` : ""}
             <input type="file" id="photo-file" accept="image/*" style="display:none">
           ` : ""}
@@ -423,8 +423,8 @@ class CardBookPanel extends HTMLElement {
                </div>
                ${c.org   ? `<div class="header-org">${_esc(c.org)}${c.title ? " · " + _esc(c.title) : ""}</div>` : ""}
                <div class="header-actions">
-                 <button class="btn-primary" id="btn-edit"><ha-icon icon="mdi:pencil-outline"></ha-icon>Bearbeiten</button>
-                 <button class="btn-danger"  id="btn-delete"><ha-icon icon="mdi:trash-can-outline"></ha-icon>Löschen</button>
+                 <button class="btn-primary" id="btn-edit"><ha-icon icon="mdi:pencil-outline" style="--mdi-icon-size:14px"></ha-icon>Bearbeiten</button>
+                 <button class="btn-danger"  id="btn-delete"><ha-icon icon="mdi:trash-can-outline" style="--mdi-icon-size:14px"></ha-icon>Löschen</button>
                </div>`
             : `<div class="header-actions">
                  <button class="btn-primary" id="btn-save">&#10003; Speichern</button>
