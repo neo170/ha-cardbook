@@ -6,6 +6,7 @@
 const EMAIL_TYPES  = ["internet", "home", "work", "other"];
 const PHONE_TYPES  = ["cell", "home", "work", "voice", "fax", "pager", "other"];
 const ADDRESS_TYPES = ["home", "work", "other"];
+const COPY_ICON = `<svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>`;
 
 const EMPTY_CONTACT = () => ({
   uid: "",
@@ -365,7 +366,7 @@ class CardBookPanel extends HTMLElement {
           ${ro
             ? `<div class="fn-name-row">
                  <h2 class="fn-display">${_esc(c.fn || "(Kein Name)")}</h2>
-                 <button class="btn-copy" id="btn-copy-contact" title="Kontaktdaten kopieren">&#128203;</button>
+                 <button class="btn-copy-inline" data-copy-all="1" title="Alle Kontaktdaten kopieren">${COPY_ICON}</button>
                </div>
                ${c.org   ? `<div class="header-org">${_esc(c.org)}${c.title ? " · " + _esc(c.title) : ""}</div>` : ""}
                <div class="header-actions">
@@ -457,7 +458,7 @@ class CardBookPanel extends HTMLElement {
         <section class="section">
           <h3 class="section-title">Notiz</h3>
           ${ro
-            ? `<div class="note-display">${_esc(c.note || "").replace(/\n/g, "<br>")}</div>`
+            ? `<div class="copy-wrap"><div class="note-display">${_esc(c.note || "").replace(/\n/g, "<br>")}</div><button class="btn-copy-inline" data-copy-field="note" title="Kopieren">${COPY_ICON}</button></div>`
             : `<textarea class="field-input full-width" data-field="note" rows="4">${_esc(c.note || "")}</textarea>`
           }
         </section>`}
@@ -479,14 +480,22 @@ class CardBookPanel extends HTMLElement {
     // Read-only action buttons
     root.querySelector("#btn-edit")?.addEventListener("click", () => this._startEdit());
     root.querySelector("#btn-delete")?.addEventListener("click", () => this._deleteContact());
-    root.querySelector("#btn-copy-contact")?.addEventListener("click", () => {
-      const text = _formatContactText(contact);
-      navigator.clipboard.writeText(text).then(() => {
-        this._showToast("Kontaktdaten kopiert", "info");
-      }).catch(() => {
-        this._showToast("Kopieren fehlgeschlagen", "error");
-      });
-    });
+    if (this._copyClickHandler) root.removeEventListener("click", this._copyClickHandler);
+    this._copyClickHandler = (e) => {
+      const btn = e.target.closest(".btn-copy-inline");
+      if (!btn) return;
+      const text = btn.dataset.copyAll === "1"
+        ? _formatContactText(contact)
+        : btn.dataset.copyField === "note"
+          ? (contact.note || "")
+          : (btn.dataset.copy || "");
+      if (!text) return;
+      _clipboardWrite(text,
+        () => this._showToast("Kopiert", "info"),
+        () => this._showToast("Kopieren fehlgeschlagen", "error")
+      );
+    };
+    root.addEventListener("click", this._copyClickHandler);
 
     // Edit mode action buttons
     root.querySelector("#btn-save")?.addEventListener("click", () => this._saveContact());
@@ -1089,10 +1098,18 @@ class CardBookPanel extends HTMLElement {
 
       .header-name { flex: 1; }
       .fn-display  { margin: 0 0 4px; font-size: 22px; font-weight: 500; }
-      .fn-name-row { display: flex; align-items: flex-start; gap: 8px; }
-      .btn-copy    { background: none; border: none; cursor: pointer; font-size: 18px; color: var(--secondary-text-color, #9e9e9e); padding: 2px 4px; border-radius: 4px; line-height: 1.3; margin-top: 3px; flex-shrink: 0; }
-      .btn-copy:hover { background: var(--secondary-background-color, #e0e0e0); }
+      .fn-name-row { display: flex; align-items: center; gap: 6px; }
       .header-org  { color: var(--secondary-text-color, #757575); margin-bottom: 10px; }
+      .copy-wrap { display: inline-flex; align-items: center; gap: 4px; max-width: 100%; }
+      .btn-copy-inline {
+        opacity: 0; flex-shrink: 0; background: none; border: none; cursor: pointer;
+        color: var(--secondary-text-color, #9e9e9e); padding: 2px; border-radius: 3px;
+        display: inline-flex; align-items: center; justify-content: center;
+        transition: opacity .15s, background .15s; line-height: 1;
+      }
+      .copy-wrap:hover .btn-copy-inline,
+      .fn-name-row:hover .btn-copy-inline { opacity: 1; }
+      .btn-copy-inline:hover { background: var(--secondary-background-color, #e0e0e0); color: var(--primary-text-color, #212121); }
       .header-actions { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 10px; }
 
       /* ── Buttons ──────────────────────────────────────────────────────── */
@@ -1218,7 +1235,7 @@ class CardBookPanel extends HTMLElement {
       }
       .multi-row .field-select { width: 110px; flex-shrink: 0; }
       .multi-row .field-input  { flex: 1; }
-      .multi-value-display     { padding: 4px 0; font-size: 13px; }
+      .multi-value-display     { padding: 4px 0; font-size: 13px; display: flex; align-items: center; }
       .multi-value-type        { font-size: 11px; color: var(--secondary-text-color, #9e9e9e); text-transform: capitalize; margin-right: 6px; }
 
       /* ── Address block ────────────────────────────────────────────────── */
@@ -1344,7 +1361,9 @@ function _field(label, fieldPath, value, readOnly, type = "text", fullWidth = fa
     return `
       <div class="${cls}">
         <div class="field-label">${_esc(label)}</div>
-        <div class="field-value">${_esc(display) || "&nbsp;"}</div>
+        ${value
+          ? `<div class="copy-wrap"><div class="field-value">${_esc(display)}</div><button class="btn-copy-inline" data-copy="${_esc(display)}" title="Kopieren">${COPY_ICON}</button></div>`
+          : `<div class="field-value">&nbsp;</div>`}
       </div>`;
   }
   return `
@@ -1358,8 +1377,9 @@ function _multiField(kind, index, item, readOnly, types) {
   if (readOnly) {
     const displayLabel = item.label != null ? item.label : (item.type || "");
     return `
-      <div class="multi-value-display">
-        <span class="multi-value-type">${_esc(displayLabel)}</span>${_esc(item.value || "")}
+      <div class="multi-value-display copy-wrap">
+        <span class="multi-value-type">${_esc(displayLabel)}</span><span>${_esc(item.value || "")}</span>
+        ${item.value ? `<button class="btn-copy-inline" data-copy="${_esc(item.value)}" title="Kopieren">${COPY_ICON}</button>` : ""}
       </div>`;
   }
   const labelVal = item.label != null ? item.label : (item.type || "");
@@ -1378,10 +1398,11 @@ function _addressBlock(index, addr, readOnly) {
   if (readOnly) {
     const zipCity = [addr.zip, addr.city].filter(Boolean).join(" ");
     const parts = [addr.street, zipCity, addr.region, addr.country].filter(Boolean);
+    const addrText = parts.join(", ");
     return `
       <div class="address-block">
         <div class="multi-value-type">${_esc(addr.label || addr.type || "home")}</div>
-        <div class="address-display">${parts.map(_esc).join(", ")}</div>
+        <div class="copy-wrap"><div class="address-display">${parts.map(_esc).join(", ")}</div>${parts.length ? `<button class="btn-copy-inline" data-copy="${_esc(addrText)}" title="Kopieren">${COPY_ICON}</button>` : ""}</div>
       </div>`;
   }
   const typeOpts = ADDRESS_TYPES.map((t) =>
@@ -1446,6 +1467,23 @@ function _formatContactText(c) {
   if (c.note) lines.push(`Notiz: ${c.note}`);
   if (c.categories?.length) lines.push(`Kategorien: ${c.categories.join(", ")}`);
   return lines.join("\n");
+}
+
+function _clipboardWrite(text, onSuccess, onError) {
+  if (navigator.clipboard?.writeText) {
+    navigator.clipboard.writeText(text).then(onSuccess).catch(onError);
+  } else {
+    try {
+      const ta = document.createElement("textarea");
+      ta.value = text;
+      Object.assign(ta.style, { position: "fixed", top: "0", left: "0", opacity: "0" });
+      document.body.appendChild(ta);
+      ta.select();
+      document.execCommand("copy");
+      document.body.removeChild(ta);
+      onSuccess();
+    } catch (e) { onError(e); }
+  }
 }
 
 function _setPath(obj, path, value) {
