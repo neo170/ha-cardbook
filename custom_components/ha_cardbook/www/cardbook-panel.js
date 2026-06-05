@@ -782,7 +782,17 @@ class CardBookPanel extends HTMLElement {
     ctx.drawImage(this._cropImg, srcX, srcY, srcSize, srcSize, 0, 0, OUT, OUT);
 
     const dataUrl = off.toDataURL("image/jpeg", 0.92);
-    this._cropCallback?.(dataUrl);
+
+    if (this._cropCallback) {
+      // Normal flow: callback set by file-input or explicit open
+      this._cropCallback(dataUrl);
+    } else if (this._editMode && this._edited) {
+      // Clipboard paste flow: no callback — update edited contact directly
+      this._edited.photo = dataUrl;
+      this._closeCropDialog();
+      this._renderDetail();   // re-render edit form with new photo
+      return;
+    }
     this._closeCropDialog();
   }
 
