@@ -1250,9 +1250,9 @@ class CardBookPanel extends HTMLElement {
         align-items: center;
         gap: 5px;
       }
-      .btn-primary ha-icon, .btn-secondary ha-icon, .btn-danger ha-icon { width: 14px; height: 14px; overflow: hidden; flex-shrink: 0; }
-      .btn-copy-inline ha-icon { width: 14px; height: 14px; overflow: hidden; flex-shrink: 0; }
-      .photo-btn ha-icon { width: 14px; height: 14px; overflow: hidden; flex-shrink: 0; }
+      .btn-primary ha-icon, .btn-secondary ha-icon, .btn-danger ha-icon { transform: scale(0.58); margin: -5px; flex-shrink: 0; }
+      .btn-copy-inline ha-icon { transform: scale(0.58); margin: -5px; flex-shrink: 0; }
+      .photo-btn ha-icon { transform: scale(0.58); margin: -5px; flex-shrink: 0; }
       .btn-primary   { background: var(--primary-color, #03a9f4); color: #fff; }
       .btn-secondary { background: var(--secondary-background-color, #e0e0e0); color: var(--primary-text-color, #212121); }
       .btn-danger    { background: var(--error-color, #f44336); color: #fff; }
