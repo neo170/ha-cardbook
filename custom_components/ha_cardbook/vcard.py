@@ -40,6 +40,8 @@ def parse_vcard(text: str) -> dict | None:
     text = re.sub(r"\r\n([ \t])", r"\1", text)
     text = re.sub(r"\n([ \t])", r"\1", text)
 
+    group_labels: dict[str, str] = {}  # group_name (lowercase) → X-ABLabel text
+
     for raw_line in text.splitlines():
         line = raw_line.rstrip("\r")
         if not line or ":" not in line:
@@ -51,11 +53,15 @@ def parse_vcard(text: str) -> dict | None:
         value = line[colon_idx + 1:]
 
         parts = prop_full.split(";")
-        prop_name = parts[0].upper()
+        prop_name_raw = parts[0].upper()
 
-        # Strip vCard group prefix: "item1.TEL" → "TEL"
-        if "." in prop_name:
-            prop_name = prop_name.split(".", 1)[1]
+        # Extract group prefix: "item1.TEL" → group_name="item1", prop_name="TEL"
+        group_name = ""
+        if "." in prop_name_raw:
+            grp_raw, prop_name = prop_name_raw.split(".", 1)
+            group_name = grp_raw.lower()
+        else:
+            prop_name = prop_name_raw
 
         # Collect parameters into a dict (last value wins for duplicate keys)
         params: dict[str, str] = {}
@@ -87,18 +93,27 @@ def parse_vcard(text: str) -> dict | None:
             raw_type = params.get("TYPE", "internet")
             pref, primary = _parse_type(raw_type, params, "internet")
             contact["emails"].append({
-                "type":  primary,
-                "value": value.strip(),
-                "pref":  pref,
+                "type":   primary,
+                "value":  value.strip(),
+                "pref":   pref,
+                "_group": group_name,
             })
+
+        elif prop_name == "X-ABLABEL":
+            if group_name:
+                raw_label = _decode(value).strip()
+                # Strip iOS system label encoding: _$!<Mobile>!$_ → Mobile
+                m = re.match(r"_\$!<(.+?)>!\$_", raw_label)
+                group_labels[group_name] = m.group(1) if m else raw_label
 
         elif prop_name == "TEL":
             raw_type = params.get("TYPE", "voice")
             pref, primary = _parse_type(raw_type, params, "voice")
             contact["phones"].append({
-                "type":  primary,
-                "value": value.strip(),
-                "pref":  pref,
+                "type":   primary,
+                "value":  value.strip(),
+                "pref":   pref,
+                "_group": group_name,
             })
 
         elif prop_name == "ADR":
@@ -114,6 +129,7 @@ def parse_vcard(text: str) -> dict | None:
                 "region":   _decode(seg[4]) if len(seg) > 4 else "",
                 "zip":      _decode(seg[5]) if len(seg) > 5 else "",
                 "country":  _decode(seg[6]) if len(seg) > 6 else "",
+                "_group":   group_name,
             })
 
         elif prop_name == "ORG":
@@ -144,6 +160,12 @@ def parse_vcard(text: str) -> dict | None:
             elif value.strip():
                 # Raw base64 without explicit ENCODING param
                 contact["photo"] = f"data:image/{media_type};base64,{value.strip()}"
+
+    # Apply X-ABLabel custom labels to phones, emails, addresses
+    for item in contact["phones"] + contact["emails"] + contact["addresses"]:
+        grp = item.pop("_group", "")
+        if grp and grp in group_labels:
+            item["label"] = group_labels[grp]
 
     # Derive FN from N if missing
     if not contact["fn"]:
@@ -183,19 +205,35 @@ def build_vcard(contact: dict) -> str:
     if contact.get("title"):
         lines.append(f"TITLE:{_encode(contact['title'])}")
 
+    _grp_ctr = 0
+
     for email in contact.get("emails", []):
         if not email.get("value"):
             continue
+        label = (email.get("label") or "").strip()
         t = email.get("type", "internet").upper()
         pref = ";PREF" if email.get("pref") else ""
-        lines.append(f"EMAIL;TYPE={t}{pref}:{email['value']}")
+        if label:
+            _grp_ctr += 1
+            grp = f"item{_grp_ctr}"
+            lines.append(f"{grp}.EMAIL;TYPE={t}{pref}:{email['value']}")
+            lines.append(f"{grp}.X-ABLabel:{label}")
+        else:
+            lines.append(f"EMAIL;TYPE={t}{pref}:{email['value']}")
 
     for phone in contact.get("phones", []):
         if not phone.get("value"):
             continue
+        label = (phone.get("label") or "").strip()
         t = phone.get("type", "voice").upper()
         pref = ";PREF" if phone.get("pref") else ""
-        lines.append(f"TEL;TYPE={t}{pref}:{phone['value']}")
+        if label:
+            _grp_ctr += 1
+            grp = f"item{_grp_ctr}"
+            lines.append(f"{grp}.TEL;TYPE={t}{pref}:{phone['value']}")
+            lines.append(f"{grp}.X-ABLabel:{label}")
+        else:
+            lines.append(f"TEL;TYPE={t}{pref}:{phone['value']}")
 
     for addr in contact.get("addresses", []):
         t = addr.get("type", "home").upper()

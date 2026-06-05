@@ -525,12 +525,12 @@ class CardBookPanel extends HTMLElement {
       const el = e.target;
       const i  = parseInt(el.dataset.index, 10);
       if (el.dataset.subfield === "value") ed.emails[i].value = el.value;
-      if (el.dataset.subfield === "type")  ed.emails[i].type  = el.value;
+      if (el.dataset.subfield === "label") ed.emails[i].label = el.value;
     });
     root.querySelector("#email-list").addEventListener("change", (e) => {
       const el = e.target;
       const i  = parseInt(el.dataset.index, 10);
-      if (el.dataset.subfield === "type")  ed.emails[i].type  = el.value;
+      if (el.dataset.subfield === "label") ed.emails[i].label = el.value;
     });
 
     // Multi-value fields: phone
@@ -550,12 +550,12 @@ class CardBookPanel extends HTMLElement {
       const el = e.target;
       const i  = parseInt(el.dataset.index, 10);
       if (el.dataset.subfield === "value") ed.phones[i].value = el.value;
-      if (el.dataset.subfield === "type")  ed.phones[i].type  = el.value;
+      if (el.dataset.subfield === "label") ed.phones[i].label = el.value;
     });
     root.querySelector("#phone-list").addEventListener("change", (e) => {
       const el = e.target;
       const i  = parseInt(el.dataset.index, 10);
-      if (el.dataset.subfield === "type")  ed.phones[i].type  = el.value;
+      if (el.dataset.subfield === "label") ed.phones[i].label = el.value;
     });
 
     // Multi-value fields: address
@@ -1342,17 +1342,18 @@ function _field(label, fieldPath, value, readOnly, type = "text", fullWidth = fa
 
 function _multiField(kind, index, item, readOnly, types) {
   if (readOnly) {
+    const displayLabel = item.label != null ? item.label : (item.type || "");
     return `
       <div class="multi-value-display">
-        <span class="multi-value-type">${_esc(item.type || "")}</span>${_esc(item.value || "")}
+        <span class="multi-value-type">${_esc(displayLabel)}</span>${_esc(item.value || "")}
       </div>`;
   }
-  const opts = types.map((t) =>
-    `<option value="${t}"${item.type === t ? " selected" : ""}>${t}</option>`
-  ).join("");
+  const labelVal = item.label != null ? item.label : (item.type || "");
   return `
     <div class="multi-row">
-      <select class="field-select" data-index="${index}" data-subfield="type">${opts}</select>
+      <input class="field-input" type="text" style="width:110px"
+             data-index="${index}" data-subfield="label"
+             value="${_esc(labelVal)}" placeholder="Label">
       <input class="field-input" type="${kind === "email" ? "email" : "tel"}"
              data-index="${index}" data-subfield="value" value="${_esc(item.value || "")}">
       <button class="remove-btn" data-index="${index}" title="Entfernen">&#8722;</button>
@@ -1364,7 +1365,7 @@ function _addressBlock(index, addr, readOnly) {
     const parts = [addr.street, addr.city, addr.region, addr.zip, addr.country].filter(Boolean);
     return `
       <div class="address-block">
-        <div class="multi-value-type">${_esc(addr.type || "home")}</div>
+        <div class="multi-value-type">${_esc(addr.label || addr.type || "home")}</div>
         <div class="address-display">${parts.map(_esc).join(", ")}</div>
       </div>`;
   }
