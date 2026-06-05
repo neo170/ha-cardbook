@@ -6,7 +6,7 @@
 const EMAIL_TYPES  = ["internet", "home", "work", "other"];
 const PHONE_TYPES  = ["cell", "home", "work", "voice", "fax", "pager", "other"];
 const ADDRESS_TYPES = ["home", "work", "other"];
-const COPY_ICON = `<svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>`;
+const COPY_ICON = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>`;
 
 const EMPTY_CONTACT = () => ({
   uid: "",
@@ -104,6 +104,17 @@ class CardBookPanel extends HTMLElement {
         </main>
       </div>
       <div class="toast" id="toast"></div>
+
+      <!-- ── Confirm dialog ────────────────────────────────────────────── -->
+      <div class="confirm-overlay" id="confirm-overlay">
+        <div class="confirm-dialog">
+          <div class="confirm-message" id="confirm-message"></div>
+          <div class="confirm-actions">
+            <button class="btn-danger"     id="btn-confirm-ok">OK</button>
+            <button class="btn-secondary"  id="btn-confirm-cancel">Abbrechen</button>
+          </div>
+        </div>
+      </div>
 
       <!-- ── Crop dialog ─────────────────────────────────────────────── -->
       <div class="crop-overlay" id="crop-overlay">
@@ -215,7 +226,7 @@ class CardBookPanel extends HTMLElement {
 
   async _deleteContact() {
     if (!this._selected) return;
-    if (!confirm(`Kontakt "${this._selected.fn}" wirklich löschen?`)) return;
+    if (!await this._confirm(`Kontakt "${this._selected.fn}" wirklich löschen?`, "Löschen")) return;
     try {
       await this._callApi("DELETE", `cardbook/contacts/${this._selected.uid}`);
       this._contacts = this._contacts.filter((c) => c.uid !== this._selected.uid);
@@ -904,6 +915,27 @@ class CardBookPanel extends HTMLElement {
     }, 3500);
   }
 
+  _confirm(msg, okLabel = "OK") {
+    return new Promise((resolve) => {
+      const overlay = this.shadowRoot.getElementById("confirm-overlay");
+      this.shadowRoot.getElementById("confirm-message").textContent = msg;
+      const okBtn     = this.shadowRoot.getElementById("btn-confirm-ok");
+      const cancelBtn = this.shadowRoot.getElementById("btn-confirm-cancel");
+      okBtn.textContent = okLabel;
+      overlay.classList.add("visible");
+      const done = (result) => {
+        overlay.classList.remove("visible");
+        okBtn.removeEventListener("click", onOk);
+        cancelBtn.removeEventListener("click", onCancel);
+        resolve(result);
+      };
+      const onOk     = () => done(true);
+      const onCancel = () => done(false);
+      okBtn.addEventListener("click", onOk);
+      cancelBtn.addEventListener("click", onCancel);
+    });
+  }
+
   // ── Styles ────────────────────────────────────────────────────────────────
 
   _styles() {
@@ -1109,7 +1141,7 @@ class CardBookPanel extends HTMLElement {
       }
       .copy-wrap:hover .btn-copy-inline,
       .fn-name-row:hover .btn-copy-inline { opacity: 1; }
-      .btn-copy-inline:hover { background: var(--secondary-background-color, #e0e0e0); color: var(--primary-text-color, #212121); }
+      .btn-copy-inline:hover { background: rgba(0,0,0,0.06); color: var(--primary-text-color, #212121); }
       .header-actions { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 10px; }
 
       /* ── Buttons ──────────────────────────────────────────────────────── */
@@ -1278,6 +1310,35 @@ class CardBookPanel extends HTMLElement {
         justify-content: center;
       }
       .crop-overlay.visible { display: flex; }
+
+      .confirm-overlay {
+        display: none;
+        position: fixed;
+        inset: 0;
+        background: rgba(0,0,0,0.5);
+        z-index: 10001;
+        align-items: center;
+        justify-content: center;
+      }
+      .confirm-overlay.visible { display: flex; }
+      .confirm-dialog {
+        background: var(--card-background-color, #fff);
+        border-radius: 10px;
+        padding: 24px 28px;
+        max-width: 380px;
+        width: 90%;
+        box-shadow: 0 6px 28px rgba(0,0,0,0.35);
+      }
+      .confirm-message {
+        font-size: 15px;
+        line-height: 1.5;
+        margin-bottom: 20px;
+      }
+      .confirm-actions {
+        display: flex;
+        gap: 8px;
+        justify-content: flex-end;
+      }
 
       .crop-dialog {
         background: var(--card-background-color, #fff);
