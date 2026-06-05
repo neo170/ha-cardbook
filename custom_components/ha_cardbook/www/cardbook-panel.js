@@ -1499,8 +1499,8 @@ class CardBookPanel extends HTMLElement {
 
         /* Header: Back-Button nur wenn Detail geöffnet */
         .shell.detail-open #btn-header-back { display: inline-flex; }
-        .shell.detail-open .topbar-title    { display: none; }
-        .shell.detail-open .header-actions  { display: none; }
+        .shell.detail-open .topbar-title         { display: none; }
+        .shell.detail-open .header > .header-actions { display: none; }
       }
     `;
   }
