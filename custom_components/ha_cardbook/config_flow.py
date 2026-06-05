@@ -73,14 +73,11 @@ class CardBookConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
     @staticmethod
     @callback
     def async_get_options_flow(config_entry):
-        return CardBookOptionsFlow(config_entry)
+        return CardBookOptionsFlow()
 
 
 class CardBookOptionsFlow(config_entries.OptionsFlow):
     """Allow editing connection parameters and refresh interval."""
-
-    def __init__(self, config_entry: config_entries.ConfigEntry) -> None:
-        self.config_entry = config_entry
 
     async def async_step_init(self, user_input=None):
         errors: dict[str, str] = {}
