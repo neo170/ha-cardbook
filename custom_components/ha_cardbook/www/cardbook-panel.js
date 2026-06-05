@@ -43,6 +43,16 @@ class CardBookPanel extends HTMLElement {
     this._loading   = false;
     this._error     = "";
     this._rendered  = false;
+    // Crop dialog state
+    this._cropImg      = null;
+    this._cropCX       = 0;
+    this._cropCY       = 0;
+    this._cropR        = 0;
+    this._cropScale    = 1;
+    this._cropDragging = false;
+    this._cropDragOffX = 0;
+    this._cropDragOffY = 0;
+    this._cropCallback = null;
   }
 
   // ── HA lifecycle ──────────────────────────────────────────────────────────
@@ -93,6 +103,24 @@ class CardBookPanel extends HTMLElement {
         </main>
       </div>
       <div class="toast" id="toast"></div>
+
+      <!-- ── Crop dialog ─────────────────────────────────────────────── -->
+      <div class="crop-overlay" id="crop-overlay">
+        <div class="crop-dialog">
+          <div class="crop-title">&#9986; Foto zuschneiden</div>
+          <div class="crop-hint">Kreis verschieben · Mausrad zum Vergrößern/Verkleinern</div>
+          <canvas id="crop-canvas"></canvas>
+          <div class="crop-size-row">
+            <button class="icon-btn" id="btn-crop-smaller" title="Kleiner">&#8722;</button>
+            <span class="crop-size-label">Ausschnitt</span>
+            <button class="icon-btn" id="btn-crop-larger"  title="Größer">&#43;</button>
+          </div>
+          <div class="crop-actions">
+            <button class="btn-primary"   id="btn-crop-confirm">&#10003; Übernehmen</button>
+            <button class="btn-secondary" id="btn-crop-cancel" >&#10005; Abbrechen</button>
+          </div>
+        </div>
+      </div>
     `;
 
     const root = this.shadowRoot;
@@ -527,34 +555,220 @@ class CardBookPanel extends HTMLElement {
       if (sf && !isNaN(i)) ed.addresses[i][sf] = el.value;
     });
 
-    // Photo upload
+    // Photo upload → open crop dialog
     root.querySelector("#btn-photo-upload")?.addEventListener("click", () => {
       root.querySelector("#photo-file").click();
     });
     root.querySelector("#photo-file")?.addEventListener("change", (e) => {
       const file = e.target.files?.[0];
       if (!file) return;
-      const reader = new FileReader();
-      reader.onload = (ev) => {
-        ed.photo = ev.target.result;
+      // Reset so same file can be selected again
+      e.target.value = "";
+      this._openCropDialog(file, (dataUrl) => {
+        ed.photo = dataUrl;
         const preview = root.querySelector("#photo-preview");
-        if (preview.tagName === "IMG") {
-          preview.src = ed.photo;
-        } else {
-          const img = document.createElement("img");
-          img.src   = ed.photo;
-          img.className = "detail-photo";
-          img.id    = "photo-preview";
-          preview.replaceWith(img);
+        if (preview) {
+          if (preview.tagName === "IMG") {
+            preview.src = dataUrl;
+          } else {
+            const img = document.createElement("img");
+            img.src       = dataUrl;
+            img.className = "detail-photo";
+            img.id        = "photo-preview";
+            img.alt       = "";
+            preview.replaceWith(img);
+          }
         }
-      };
-      reader.readAsDataURL(file);
+      });
     });
     root.querySelector("#btn-photo-remove")?.addEventListener("click", () => {
       ed.photo = "";
       this._renderDetail();
     });
   }
+
+  // ── Crop dialog ───────────────────────────────────────────────────────────
+
+  _openCropDialog(file, callback) {
+    this._cropCallback = callback;
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const img = new Image();
+      img.onload = () => {
+        this._initCropCanvas(img);
+        this.shadowRoot.getElementById("crop-overlay").classList.add("visible");
+      };
+      img.src = e.target.result;
+    };
+    reader.readAsDataURL(file);
+  }
+
+  _initCropCanvas(img) {
+    const canvas  = this.shadowRoot.getElementById("crop-canvas");
+    const maxW    = Math.min(640, (this.offsetWidth  || window.innerWidth)  - 80);
+    const maxH    = Math.min(420, (this.offsetHeight || window.innerHeight) - 260);
+    const scale   = Math.min(maxW / img.naturalWidth, maxH / img.naturalHeight, 1);
+
+    canvas.width  = Math.round(img.naturalWidth  * scale);
+    canvas.height = Math.round(img.naturalHeight * scale);
+
+    this._cropImg   = img;
+    this._cropScale = scale;
+    this._cropCX    = Math.round(canvas.width  / 2);
+    this._cropCY    = Math.round(canvas.height / 2);
+    this._cropR     = Math.round(Math.min(canvas.width, canvas.height) * 0.4);
+
+    // Wire canvas events (once)
+    if (!canvas._cropBound) {
+      canvas._cropBound = true;
+      canvas.addEventListener("mousedown",  (e) => this._cropMouseDown(e));
+      canvas.addEventListener("mousemove",  (e) => this._cropMouseMove(e));
+      canvas.addEventListener("mouseup",   ()  => { this._cropDragging = false; });
+      canvas.addEventListener("mouseleave",()  => { this._cropDragging = false; });
+      canvas.addEventListener("wheel",      (e) => this._cropWheel(e),  { passive: false });
+      canvas.addEventListener("touchstart", (e) => this._cropTouchStart(e), { passive: false });
+      canvas.addEventListener("touchmove",  (e) => this._cropTouchMove(e),  { passive: false });
+      canvas.addEventListener("touchend",   ()  => { this._cropDragging = false; });
+    }
+
+    // Wire dialog buttons (once)
+    const sr = this.shadowRoot;
+    if (!sr._cropDialogBound) {
+      sr._cropDialogBound = true;
+      sr.getElementById("btn-crop-confirm").addEventListener("click", () => this._confirmCrop());
+      sr.getElementById("btn-crop-cancel" ).addEventListener("click", () => this._closeCropDialog());
+      sr.getElementById("btn-crop-smaller").addEventListener("click", () => this._resizeCrop(-20));
+      sr.getElementById("btn-crop-larger" ).addEventListener("click", () => this._resizeCrop(+20));
+    }
+
+    this._drawCrop();
+  }
+
+  _cropCanvasCoords(e) {
+    const canvas = this.shadowRoot.getElementById("crop-canvas");
+    const rect   = canvas.getBoundingClientRect();
+    const scaleX = canvas.width  / rect.width;
+    const scaleY = canvas.height / rect.height;
+    return {
+      x: (e.clientX - rect.left) * scaleX,
+      y: (e.clientY - rect.top)  * scaleY,
+    };
+  }
+
+  _cropMouseDown(e) {
+    const { x, y } = this._cropCanvasCoords(e);
+    const dx = x - this._cropCX, dy = y - this._cropCY;
+    if (dx * dx + dy * dy <= this._cropR * this._cropR) {
+      this._cropDragging = true;
+      this._cropDragOffX = dx;
+      this._cropDragOffY = dy;
+    }
+  }
+
+  _cropMouseMove(e) {
+    if (!this._cropDragging) return;
+    const canvas    = this.shadowRoot.getElementById("crop-canvas");
+    const { x, y }  = this._cropCanvasCoords(e);
+    const r         = this._cropR;
+    this._cropCX    = Math.max(r, Math.min(canvas.width  - r, x - this._cropDragOffX));
+    this._cropCY    = Math.max(r, Math.min(canvas.height - r, y - this._cropDragOffY));
+    this._drawCrop();
+  }
+
+  _cropTouchStart(e) {
+    e.preventDefault();
+    const t = e.touches[0];
+    this._cropMouseDown({ clientX: t.clientX, clientY: t.clientY });
+  }
+
+  _cropTouchMove(e) {
+    e.preventDefault();
+    const t = e.touches[0];
+    this._cropMouseMove({ clientX: t.clientX, clientY: t.clientY });
+  }
+
+  _cropWheel(e) {
+    e.preventDefault();
+    this._resizeCrop(e.deltaY < 0 ? +12 : -12);
+  }
+
+  _resizeCrop(delta) {
+    const canvas = this.shadowRoot.getElementById("crop-canvas");
+    const maxR   = Math.min(this._cropCX, canvas.width - this._cropCX,
+                            this._cropCY, canvas.height - this._cropCY);
+    this._cropR  = Math.max(24, Math.min(maxR, this._cropR + delta));
+    this._drawCrop();
+  }
+
+  _drawCrop() {
+    const canvas = this.shadowRoot.getElementById("crop-canvas");
+    const ctx    = canvas.getContext("2d");
+    const cx = this._cropCX, cy = this._cropCY, r = this._cropR;
+
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.drawImage(this._cropImg, 0, 0, canvas.width, canvas.height);
+
+    // Semi-transparent overlay with circular hole (evenodd rule)
+    ctx.save();
+    ctx.fillStyle = "rgba(0,0,0,0.55)";
+    ctx.beginPath();
+    ctx.rect(0, 0, canvas.width, canvas.height);
+    ctx.arc(cx, cy, r, 0, Math.PI * 2, true); // counter-clockwise = hole
+    ctx.fill("evenodd");
+    ctx.restore();
+
+    // Dashed circle border
+    ctx.save();
+    ctx.strokeStyle = "rgba(255,255,255,0.9)";
+    ctx.lineWidth   = 2;
+    ctx.setLineDash([6, 4]);
+    ctx.beginPath();
+    ctx.arc(cx, cy, r, 0, Math.PI * 2);
+    ctx.stroke();
+    ctx.restore();
+
+    // Move-cursor hint: crosshair in center
+    ctx.save();
+    ctx.strokeStyle = "rgba(255,255,255,0.6)";
+    ctx.lineWidth   = 1;
+    ctx.setLineDash([3, 3]);
+    ctx.beginPath(); ctx.moveTo(cx - 10, cy); ctx.lineTo(cx + 10, cy); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(cx, cy - 10); ctx.lineTo(cx, cy + 10); ctx.stroke();
+    ctx.restore();
+  }
+
+  _confirmCrop() {
+    const OUT    = 256; // output pixel size
+    const off    = document.createElement("canvas");
+    off.width    = OUT;
+    off.height   = OUT;
+    const ctx    = off.getContext("2d");
+
+    // Clip to circle
+    ctx.beginPath();
+    ctx.arc(OUT / 2, OUT / 2, OUT / 2, 0, Math.PI * 2);
+    ctx.clip();
+
+    // Source rect in original image pixels
+    const invScale = 1 / this._cropScale;
+    const srcX     = (this._cropCX - this._cropR) * invScale;
+    const srcY     = (this._cropCY - this._cropR) * invScale;
+    const srcSize  = this._cropR * 2 * invScale;
+
+    ctx.drawImage(this._cropImg, srcX, srcY, srcSize, srcSize, 0, 0, OUT, OUT);
+
+    const dataUrl = off.toDataURL("image/jpeg", 0.92);
+    this._cropCallback?.(dataUrl);
+    this._closeCropDialog();
+  }
+
+  _closeCropDialog() {
+    this.shadowRoot.getElementById("crop-overlay").classList.remove("visible");
+    this._cropImg      = null;
+    this._cropCallback = null;
+  }
+
+  // ── Multi-field helpers ───────────────────────────────────────────────────
 
   _rerenderMultiList(listId, items, types, kind, root) {
     root.querySelector("#" + listId).innerHTML =
@@ -935,6 +1149,66 @@ class CardBookPanel extends HTMLElement {
       .toast-success   { background: #388e3c; }
       .toast-error     { background: #d32f2f; }
       .toast-info      { background: #1976d2; }
+
+      /* ── Crop dialog ──────────────────────────────────────────────────── */
+      .crop-overlay {
+        display: none;
+        position: fixed;
+        inset: 0;
+        background: rgba(0,0,0,0.65);
+        z-index: 10000;
+        align-items: center;
+        justify-content: center;
+      }
+      .crop-overlay.visible { display: flex; }
+
+      .crop-dialog {
+        background: var(--card-background-color, #fff);
+        border-radius: 12px;
+        padding: 20px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 12px;
+        max-width: calc(100vw - 40px);
+        box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+      }
+
+      .crop-title {
+        font-size: 16px;
+        font-weight: 600;
+        color: var(--primary-text-color, #212121);
+      }
+
+      .crop-hint {
+        font-size: 12px;
+        color: var(--secondary-text-color, #757575);
+      }
+
+      #crop-canvas {
+        border-radius: 6px;
+        cursor: grab;
+        max-width: 100%;
+        display: block;
+        touch-action: none;
+      }
+      #crop-canvas:active { cursor: grabbing; }
+
+      .crop-size-row {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+      }
+
+      .crop-size-label {
+        font-size: 12px;
+        color: var(--secondary-text-color, #757575);
+      }
+
+      .crop-actions {
+        display: flex;
+        gap: 10px;
+      }
 
       /* ── Responsive ───────────────────────────────────────────────────── */
       @media (max-width: 640px) {
