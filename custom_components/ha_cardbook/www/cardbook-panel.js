@@ -1314,10 +1314,16 @@ function _esc(str) {
 function _field(label, fieldPath, value, readOnly, type = "text", fullWidth = false) {
   const cls = `field-group${fullWidth ? " full" : ""}`;
   if (readOnly) {
+    // Format YYYY-MM-DD dates to German DD.MM.YYYY for display
+    let display = value;
+    if (type === "date" && /^\d{4}-\d{2}-\d{2}$/.test(value)) {
+      const [y, m, d] = value.split("-");
+      display = `${d}.${m}.${y}`;
+    }
     return `
       <div class="${cls}">
         <div class="field-label">${_esc(label)}</div>
-        <div class="field-value">${_esc(value) || "&nbsp;"}</div>
+        <div class="field-value">${_esc(display) || "&nbsp;"}</div>
       </div>`;
   }
   return `
