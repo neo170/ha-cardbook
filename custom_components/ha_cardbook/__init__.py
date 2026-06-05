@@ -48,7 +48,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         async_register_built_in_panel(
             hass,
             component_name="custom",
-            sidebar_title="HA CardBook",
+            sidebar_title="CardBook",
             sidebar_icon="mdi:address-book",
             frontend_url_path=PANEL_URL,
             config={

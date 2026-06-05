@@ -134,8 +134,7 @@ class CardBookPanel extends HTMLElement {
     // Derive FN from name components if empty
     if (!this._edited.fn) {
       const n = this._edited.n;
-      this._edited.fn = [n.prefix, n.given, n.additional, n.family, n.suffix]
-        .filter(Boolean).join(" ").trim();
+      this._edited.fn = [n.family, n.given].filter(Boolean).join(", ").trim();
     }
     try {
       let saved;
@@ -440,7 +439,7 @@ class CardBookPanel extends HTMLElement {
           const fnEl = root.querySelector("[data-field='fn']");
           if (fnEl && !fnEl.dataset.manual) {
             const n = ed.n;
-            const computed = [n.given, n.family].filter(Boolean).join(" ");
+            const computed = [n.family, n.given].filter(Boolean).join(", ");
             fnEl.value = computed;
             ed.fn = computed;
           }
