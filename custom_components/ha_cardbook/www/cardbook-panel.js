@@ -85,6 +85,9 @@ class CardBookPanel extends HTMLElement {
       <style>${this._styles()}</style>
       <div class="shell">
         <div class="header">
+          <ha-icon-button id="btn-menu" label="Menü">
+            <ha-icon icon="mdi:menu"></ha-icon>
+          </ha-icon-button>
           <ha-icon-button id="btn-header-back" label="Zurück">
             <ha-icon icon="mdi:arrow-left"></ha-icon>
           </ha-icon-button>
@@ -174,6 +177,9 @@ class CardBookPanel extends HTMLElement {
 
     root.getElementById("btn-new").addEventListener("click", () => this._newContact());
     root.getElementById("btn-refresh").addEventListener("click", () => this._fetchContacts(true));
+    root.getElementById("btn-menu").addEventListener("click", () => {
+      this.dispatchEvent(new CustomEvent('hass-toggle-menu', { bubbles: true, composed: true }));
+    });
     root.getElementById("btn-header-back").addEventListener("click", () => this._backToList());
 
     // Event delegation inside the contact list
@@ -1526,6 +1532,7 @@ class CardBookPanel extends HTMLElement {
 
       /* ── Responsive ───────────────────────────────────────────────────── */
       #btn-header-back { display: none; }
+      #btn-menu { display: none; }
 
       @media (max-width: 640px) {
         .body-layout { position: relative; overflow: hidden; }
@@ -1558,7 +1565,9 @@ class CardBookPanel extends HTMLElement {
         .shell.detail-open .sidebar { transform: translateX(-100%); }
         .shell.detail-open .detail  { transform: translateX(0); }
 
-        /* Header: Back-Button nur wenn Detail geöffnet */
+        /* Header: Hamburger auf Mobile, Back-Button nur wenn Detail geöffnet */
+        #btn-menu { display: inline-flex; }
+        .shell.detail-open #btn-menu { display: none; }
         .shell.detail-open #btn-header-back { display: inline-flex; }
         .shell.detail-open .topbar-title         { display: none; }
         .shell.detail-open .header > .header-actions { display: none; }
