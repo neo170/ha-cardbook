@@ -237,6 +237,7 @@ class CardBookPanel extends HTMLElement {
       this._showToast("Kontakt gelöscht", "success");
       this._renderList();
       this._renderDetail();
+      this._backToList();
     } catch (err) {
       this._showToast("Fehler beim Löschen: " + err.message, "error");
     }
@@ -270,6 +271,7 @@ class CardBookPanel extends HTMLElement {
     this._edited   = null;
     this._renderList();
     this._renderDetail();
+    this._openDetail();
   }
 
   _newContact() {
@@ -279,6 +281,7 @@ class CardBookPanel extends HTMLElement {
     this._edited   = EMPTY_CONTACT();
     this._renderList();
     this._renderDetail();
+    this._openDetail();
   }
 
   _startEdit() {
@@ -288,11 +291,20 @@ class CardBookPanel extends HTMLElement {
   }
 
   _cancelEdit() {
+    const wasNew = this._isNew;
     this._editMode = false;
     this._isNew    = false;
     this._edited   = null;
-    if (!this._selected && !this._isNew) this._renderDetail();
     this._renderDetail();
+    if (wasNew) this._backToList();
+  }
+
+  _openDetail() {
+    this.shadowRoot.querySelector(".shell")?.classList.add("detail-open");
+  }
+
+  _backToList() {
+    this.shadowRoot.querySelector(".shell")?.classList.remove("detail-open");
   }
 
   // ── Rendering ─────────────────────────────────────────────────────────────
@@ -363,6 +375,7 @@ class CardBookPanel extends HTMLElement {
       : `<div class="detail-photo-placeholder" id="photo-preview" style="background:${color}">${_esc(initials)}</div>`;
 
     return `
+      <button class="mobile-back" id="btn-back">&#8249; Zurück</button>
       <div class="detail-header">
         <div class="photo-wrap">
           ${photo}
@@ -489,6 +502,7 @@ class CardBookPanel extends HTMLElement {
     const root = panelEl;
 
     // Read-only action buttons
+    root.querySelector("#btn-back")?.addEventListener("click", () => this._backToList());
     root.querySelector("#btn-edit")?.addEventListener("click", () => this._startEdit());
     root.querySelector("#btn-delete")?.addEventListener("click", () => this._deleteContact());
     if (this._copyClickHandler) root.removeEventListener("click", this._copyClickHandler);
@@ -1389,10 +1403,35 @@ class CardBookPanel extends HTMLElement {
       }
 
       /* ── Responsive ───────────────────────────────────────────────────── */
+      .mobile-back { display: none; }
+
       @media (max-width: 640px) {
-        .sidebar { width: 100%; border-right: none; }
-        .shell   { flex-direction: column; }
-        .detail  { height: 60vh; }
+        .shell { position: relative; overflow: hidden; }
+        .sidebar { min-width: 100%; flex-shrink: 0; border-right: none; }
+        .detail {
+          position: absolute;
+          inset: 0;
+          transform: translateX(100%);
+          transition: transform 0.3s cubic-bezier(0.4,0,0.2,1);
+          background: var(--primary-background-color, #f5f5f5);
+          z-index: 5;
+          overflow-y: auto;
+          height: 100%;
+        }
+        .shell.detail-open .detail { transform: translateX(0); }
+        .mobile-back {
+          display: flex;
+          align-items: center;
+          gap: 4px;
+          padding: 10px 14px 2px;
+          background: none;
+          border: none;
+          cursor: pointer;
+          color: var(--primary-color, #03a9f4);
+          font-size: 15px;
+          font-weight: 500;
+        }
+        .mobile-back:active { opacity: 0.7; }
       }
     `;
   }
