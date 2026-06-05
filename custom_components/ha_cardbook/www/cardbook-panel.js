@@ -85,6 +85,9 @@ class CardBookPanel extends HTMLElement {
       <style>${this._styles()}</style>
       <div class="shell">
         <div class="header">
+          <ha-icon-button id="btn-header-back" label="Zurück">
+            <ha-icon icon="mdi:arrow-left"></ha-icon>
+          </ha-icon-button>
           <div class="topbar-title">
             <ha-icon icon="mdi:book-account"></ha-icon>
             <span>CardBook</span>
@@ -159,6 +162,7 @@ class CardBookPanel extends HTMLElement {
 
     root.getElementById("btn-new").addEventListener("click", () => this._newContact());
     root.getElementById("btn-refresh").addEventListener("click", () => this._fetchContacts(true));
+    root.getElementById("btn-header-back").addEventListener("click", () => this._backToList());
 
     // Event delegation inside the contact list
     root.getElementById("contact-list").addEventListener("click", (e) => {
@@ -389,7 +393,6 @@ class CardBookPanel extends HTMLElement {
       : `<div class="detail-photo-placeholder" id="photo-preview" style="background:${color}">${_esc(initials)}</div>`;
 
     return `
-      <button class="mobile-back" id="btn-back">&#8249; Zurück</button>
       <div class="detail-header">
         <div class="photo-wrap">
           ${photo}
@@ -516,7 +519,6 @@ class CardBookPanel extends HTMLElement {
     const root = panelEl;
 
     // Read-only action buttons
-    root.querySelector("#btn-back")?.addEventListener("click", () => this._backToList());
     root.querySelector("#btn-edit")?.addEventListener("click", () => this._startEdit());
     root.querySelector("#btn-delete")?.addEventListener("click", () => this._deleteContact());
     if (this._copyClickHandler) root.removeEventListener("click", this._copyClickHandler);
@@ -1462,35 +1464,43 @@ class CardBookPanel extends HTMLElement {
       }
 
       /* ── Responsive ───────────────────────────────────────────────────── */
-      .mobile-back { display: none; }
+      #btn-header-back { display: none; }
 
       @media (max-width: 640px) {
         .body-layout { position: relative; overflow: hidden; }
-        .sidebar { min-width: 100%; flex-shrink: 0; border-right: none; }
+
+        .sidebar {
+          width: 100%;
+          min-width: 0;
+          border-right: none;
+          position: absolute;
+          inset: 0;
+          transform: translateX(0);
+          transition: transform 0.3s cubic-bezier(.4,0,.2,1);
+          will-change: transform;
+          z-index: 2;
+        }
+
         .detail {
+          width: 100%;
           position: absolute;
           inset: 0;
           transform: translateX(100%);
-          transition: transform 0.3s cubic-bezier(0.4,0,0.2,1);
+          transition: transform 0.3s cubic-bezier(.4,0,.2,1);
+          will-change: transform;
           background: var(--primary-background-color, #f5f5f5);
-          z-index: 5;
+          z-index: 3;
           overflow-y: auto;
           height: 100%;
         }
-        .shell.detail-open .detail { transform: translateX(0); }
-        .mobile-back {
-          display: flex;
-          align-items: center;
-          gap: 4px;
-          padding: 10px 14px 2px;
-          background: none;
-          border: none;
-          cursor: pointer;
-          color: var(--primary-color, #03a9f4);
-          font-size: 15px;
-          font-weight: 500;
-        }
-        .mobile-back:active { opacity: 0.7; }
+
+        .shell.detail-open .sidebar { transform: translateX(-100%); }
+        .shell.detail-open .detail  { transform: translateX(0); }
+
+        /* Header: Back-Button nur wenn Detail geöffnet */
+        .shell.detail-open #btn-header-back { display: inline-flex; }
+        .shell.detail-open .topbar-title    { display: none; }
+        .shell.detail-open .header-actions  { display: none; }
       }
     `;
   }
