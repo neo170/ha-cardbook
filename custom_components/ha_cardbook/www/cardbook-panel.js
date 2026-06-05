@@ -108,12 +108,13 @@ class CardBookPanel extends HTMLElement {
       <div class="crop-overlay" id="crop-overlay">
         <div class="crop-dialog">
           <div class="crop-title">&#9986; Foto zuschneiden</div>
-          <div class="crop-hint">Kreis verschieben · Mausrad zum Vergrößern/Verkleinern</div>
+          <div class="crop-hint">Kreis verschieben · Mausrad/± zum Vergrößern · Strg+V zum Ersetzen</div>
           <canvas id="crop-canvas"></canvas>
           <div class="crop-size-row">
             <button class="icon-btn" id="btn-crop-smaller" title="Kleiner">&#8722;</button>
             <span class="crop-size-label">Ausschnitt</span>
             <button class="icon-btn" id="btn-crop-larger"  title="Größer">&#43;</button>
+            <button class="btn-secondary" id="btn-crop-paste" title="Bild aus Zwischenablage">&#128203; Einfügen</button>
           </div>
           <div class="crop-actions">
             <button class="btn-primary"   id="btn-crop-confirm">&#10003; Übernehmen</button>
@@ -137,6 +138,26 @@ class CardBookPanel extends HTMLElement {
     root.getElementById("contact-list").addEventListener("click", (e) => {
       const item = e.target.closest(".contact-item");
       if (item) this._selectContact(item.dataset.uid);
+    });
+
+    // Global paste: replace image when crop dialog is open,
+    // or open crop dialog directly when edit mode is active
+    document.addEventListener("paste", (e) => {
+      const item = Array.from(e.clipboardData?.items || []).find((i) => i.type.startsWith("image/"));
+      if (!item) return;
+      const overlay = this.shadowRoot.getElementById("crop-overlay");
+      if (overlay?.classList.contains("visible")) {
+        // Replace current crop image
+        const blob = item.getAsFile();
+        if (blob) this._loadImageBlob(blob, (img) => this._initCropCanvas(img));
+      } else if (this._editMode) {
+        // Open crop dialog from clipboard
+        const blob = item.getAsFile();
+        if (blob) this._loadImageBlob(blob, (img) => {
+          this._initCropCanvas(img);
+          this.shadowRoot.getElementById("crop-overlay").classList.add("visible");
+        });
+      }
     });
   }
 
@@ -335,6 +356,7 @@ class CardBookPanel extends HTMLElement {
           ${photo}
           ${edit ? `
             <button class="photo-btn" id="btn-photo-upload" title="Foto hochladen">&#128247;</button>
+            <button class="photo-btn photo-btn-paste" id="btn-photo-paste" title="Aus Zwischenablage (Strg+V)">&#128203;</button>
             ${c.photo ? `<button class="photo-btn photo-btn-del" id="btn-photo-remove" title="Foto entfernen">&#10005;</button>` : ""}
             <input type="file" id="photo-file" accept="image/*" style="display:none">
           ` : ""}
@@ -559,6 +581,7 @@ class CardBookPanel extends HTMLElement {
     root.querySelector("#btn-photo-upload")?.addEventListener("click", () => {
       root.querySelector("#photo-file").click();
     });
+    root.querySelector("#btn-photo-paste")?.addEventListener("click", () => this._pasteFromClipboard());
     root.querySelector("#photo-file")?.addEventListener("change", (e) => {
       const file = e.target.files?.[0];
       if (!file) return;
@@ -639,6 +662,7 @@ class CardBookPanel extends HTMLElement {
       sr.getElementById("btn-crop-cancel" ).addEventListener("click", () => this._closeCropDialog());
       sr.getElementById("btn-crop-smaller").addEventListener("click", () => this._resizeCrop(-20));
       sr.getElementById("btn-crop-larger" ).addEventListener("click", () => this._resizeCrop(+20));
+      sr.getElementById("btn-crop-paste"  ).addEventListener("click", () => this._pasteFromClipboard(true));
     }
 
     this._drawCrop();
@@ -766,6 +790,43 @@ class CardBookPanel extends HTMLElement {
     this.shadowRoot.getElementById("crop-overlay").classList.remove("visible");
     this._cropImg      = null;
     this._cropCallback = null;
+  }
+
+  async _pasteFromClipboard(replaceInDialog = false) {
+    // Try modern async Clipboard API
+    if (navigator.clipboard?.read) {
+      try {
+        const items = await navigator.clipboard.read();
+        for (const item of items) {
+          for (const type of item.types) {
+            if (type.startsWith("image/")) {
+              const blob = await item.getType(type);
+              this._loadImageBlob(blob, (img) => {
+                this._initCropCanvas(img);
+                if (!replaceInDialog) {
+                  this.shadowRoot.getElementById("crop-overlay").classList.add("visible");
+                }
+              });
+              return;
+            }
+          }
+        }
+        this._showToast("Keine Bilddaten in der Zwischenablage", "error");
+        return;
+      } catch (_) {
+        // Permission denied — fall through to hint
+      }
+    }
+    // Fallback: instruct user
+    this._showToast("Strg+V drücken um das Bild einzufügen", "info");
+  }
+
+  _loadImageBlob(blob, callback) {
+    const url  = URL.createObjectURL(blob);
+    const img  = new Image();
+    img.onload  = () => { URL.revokeObjectURL(url); callback(img); };
+    img.onerror = () => { URL.revokeObjectURL(url); this._showToast("Bild konnte nicht geladen werden", "error"); };
+    img.src = url;
   }
 
   // ── Multi-field helpers ───────────────────────────────────────────────────
@@ -985,8 +1046,16 @@ class CardBookPanel extends HTMLElement {
         display: flex; align-items: center; justify-content: center;
         padding: 0;
       }
+      .photo-btn-paste {
+        bottom: 0;
+        left: -4px;
+        right: auto;
+        background: var(--primary-color, #03a9f4);
+      }
+
       .photo-btn-del {
-        bottom: 28px;
+        top: 0;
+        bottom: auto;
         background: var(--error-color, #f44336);
       }
 
