@@ -118,7 +118,7 @@ def parse_vcard(text: str) -> dict | None:
             contact["title"] = _decode(value)
 
         elif prop_name == "BDAY":
-            contact["bday"] = value.strip()
+            contact["bday"] = _normalize_bday(value.strip())
 
         elif prop_name == "URL":
             contact["url"] = _decode(value)
@@ -206,7 +206,9 @@ def build_vcard(contact: dict) -> str:
         lines.append(f"ADR;TYPE={t}:{seg}")
 
     if contact.get("bday"):
-        lines.append(f"BDAY:{contact['bday']}")
+        # Write YYYYMMDD for vCard 3.0 server compatibility
+        bday_out = contact["bday"].replace("-", "")
+        lines.append(f"BDAY:{bday_out}")
 
     if contact.get("url"):
         lines.append(f"URL:{_encode(contact['url'])}")
@@ -248,6 +250,25 @@ def _decode(value: str) -> str:
         .replace("\\;", ";")
         .replace("\\\\", "\\")
     )
+
+
+def _normalize_bday(raw: str) -> str:
+    """Normalise BDAY value to YYYY-MM-DD for HTML date inputs.
+
+    Handles:
+      19930602        -> 1993-06-02  (vCard 3.0 compact)
+      1993-06-02      -> 1993-06-02  (already ISO)
+      --0602          -> (kept as-is, year unknown)
+    """
+    # Strip time component if present (e.g. 19930602T000000Z)
+    raw = raw.split("T")[0].strip()
+    # YYYYMMDD compact
+    if len(raw) == 8 and raw.isdigit():
+        return f"{raw[:4]}-{raw[4:6]}-{raw[6:]}"
+    # Already YYYY-MM-DD
+    if len(raw) == 10 and raw[4] == "-" and raw[7] == "-":
+        return raw
+    return raw
 
 
 def _encode(value: str) -> str:
