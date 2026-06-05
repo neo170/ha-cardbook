@@ -457,7 +457,7 @@ class CardBookPanel extends HTMLElement {
       ed.emails.push({ type: "internet", value: "", pref: false });
       this._rerenderMultiList("email-list", ed.emails, EMAIL_TYPES, "email", root);
     });
-    root.getElementById("email-list").addEventListener("click", (e) => {
+    root.querySelector("#email-list").addEventListener("click", (e) => {
       const btn = e.target.closest(".remove-btn");
       if (btn) {
         const i = parseInt(btn.dataset.index, 10);
@@ -465,13 +465,13 @@ class CardBookPanel extends HTMLElement {
         this._rerenderMultiList("email-list", ed.emails, EMAIL_TYPES, "email", root);
       }
     });
-    root.getElementById("email-list").addEventListener("input", (e) => {
+    root.querySelector("#email-list").addEventListener("input", (e) => {
       const el = e.target;
       const i  = parseInt(el.dataset.index, 10);
       if (el.dataset.subfield === "value") ed.emails[i].value = el.value;
       if (el.dataset.subfield === "type")  ed.emails[i].type  = el.value;
     });
-    root.getElementById("email-list").addEventListener("change", (e) => {
+    root.querySelector("#email-list").addEventListener("change", (e) => {
       const el = e.target;
       const i  = parseInt(el.dataset.index, 10);
       if (el.dataset.subfield === "type")  ed.emails[i].type  = el.value;
@@ -482,7 +482,7 @@ class CardBookPanel extends HTMLElement {
       ed.phones.push({ type: "voice", value: "", pref: false });
       this._rerenderMultiList("phone-list", ed.phones, PHONE_TYPES, "phone", root);
     });
-    root.getElementById("phone-list").addEventListener("click", (e) => {
+    root.querySelector("#phone-list").addEventListener("click", (e) => {
       const btn = e.target.closest(".remove-btn");
       if (btn) {
         const i = parseInt(btn.dataset.index, 10);
@@ -490,13 +490,13 @@ class CardBookPanel extends HTMLElement {
         this._rerenderMultiList("phone-list", ed.phones, PHONE_TYPES, "phone", root);
       }
     });
-    root.getElementById("phone-list").addEventListener("input", (e) => {
+    root.querySelector("#phone-list").addEventListener("input", (e) => {
       const el = e.target;
       const i  = parseInt(el.dataset.index, 10);
       if (el.dataset.subfield === "value") ed.phones[i].value = el.value;
       if (el.dataset.subfield === "type")  ed.phones[i].type  = el.value;
     });
-    root.getElementById("phone-list").addEventListener("change", (e) => {
+    root.querySelector("#phone-list").addEventListener("change", (e) => {
       const el = e.target;
       const i  = parseInt(el.dataset.index, 10);
       if (el.dataset.subfield === "type")  ed.phones[i].type  = el.value;
@@ -507,7 +507,7 @@ class CardBookPanel extends HTMLElement {
       ed.addresses.push({ type: "home", street: "", city: "", region: "", zip: "", country: "", pobox: "", extended: "" });
       this._rerenderAddressList(root);
     });
-    root.getElementById("address-list").addEventListener("click", (e) => {
+    root.querySelector("#address-list").addEventListener("click", (e) => {
       const btn = e.target.closest(".remove-btn");
       if (btn) {
         const i = parseInt(btn.dataset.index, 10);
@@ -515,13 +515,13 @@ class CardBookPanel extends HTMLElement {
         this._rerenderAddressList(root);
       }
     });
-    root.getElementById("address-list").addEventListener("input", (e) => {
+    root.querySelector("#address-list").addEventListener("input", (e) => {
       const el = e.target;
       const i  = parseInt(el.dataset.index, 10);
       const sf = el.dataset.subfield;
       if (sf && !isNaN(i)) ed.addresses[i][sf] = el.value;
     });
-    root.getElementById("address-list").addEventListener("change", (e) => {
+    root.querySelector("#address-list").addEventListener("change", (e) => {
       const el = e.target;
       const i  = parseInt(el.dataset.index, 10);
       const sf = el.dataset.subfield;
@@ -530,7 +530,7 @@ class CardBookPanel extends HTMLElement {
 
     // Photo upload
     root.querySelector("#btn-photo-upload")?.addEventListener("click", () => {
-      root.getElementById("photo-file").click();
+      root.querySelector("#photo-file").click();
     });
     root.querySelector("#photo-file")?.addEventListener("change", (e) => {
       const file = e.target.files?.[0];
@@ -538,7 +538,7 @@ class CardBookPanel extends HTMLElement {
       const reader = new FileReader();
       reader.onload = (ev) => {
         ed.photo = ev.target.result;
-        const preview = root.getElementById("photo-preview");
+        const preview = root.querySelector("#photo-preview");
         if (preview.tagName === "IMG") {
           preview.src = ed.photo;
         } else {
@@ -558,12 +558,12 @@ class CardBookPanel extends HTMLElement {
   }
 
   _rerenderMultiList(listId, items, types, kind, root) {
-    root.getElementById(listId).innerHTML =
+    root.querySelector("#" + listId).innerHTML =
       items.map((item, i) => _multiField(kind, i, item, false, types)).join("");
   }
 
   _rerenderAddressList(root) {
-    root.getElementById("address-list").innerHTML =
+    root.querySelector("#address-list").innerHTML =
       (this._edited?.addresses || []).map((a, i) => _addressBlock(i, a, false)).join("");
   }
 
