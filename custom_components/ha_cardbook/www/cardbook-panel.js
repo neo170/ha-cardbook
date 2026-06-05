@@ -149,7 +149,7 @@ class CardBookPanel extends HTMLElement {
             <button class="icon-btn" id="btn-crop-smaller" title="Kleiner">&#8722;</button>
             <span class="crop-size-label">Ausschnitt</span>
             <button class="icon-btn" id="btn-crop-larger"  title="Größer">&#43;</button>
-            <button class="btn-secondary" id="btn-crop-paste" title="Bild aus Zwischenablage"><ha-icon icon="mdi:clipboard-outline" style="--mdi-icon-size:14px"></ha-icon>Einfügen</button>
+            <button class="btn-secondary" id="btn-crop-paste" title="Bild aus Zwischenablage"><ha-icon icon="mdi:content-copy" style="--mdi-icon-size:14px"></ha-icon>Einfügen</button>
           </div>
           <div class="crop-actions">
             <button class="btn-primary"   id="btn-crop-confirm">&#10003; Übernehmen</button>
@@ -410,7 +410,7 @@ class CardBookPanel extends HTMLElement {
           ${photo}
           ${edit ? `
             <button class="photo-btn" id="btn-photo-upload" title="Foto hochladen"><ha-icon icon="mdi:camera-outline"></ha-icon></button>
-            <button class="photo-btn photo-btn-paste" id="btn-photo-paste" title="Aus Zwischenablage (Strg+V)"><ha-icon icon="mdi:clipboard-outline" style="--mdi-icon-size:14px"></ha-icon></button>
+            <button class="photo-btn photo-btn-paste" id="btn-photo-paste" title="Aus Zwischenablage (Strg+V)"><ha-icon icon="mdi:content-copy"></ha-icon></button>
             ${c.photo ? `<button class="photo-btn photo-btn-del" id="btn-photo-remove" title="Foto entfernen">&#10005;</button>` : ""}
             <input type="file" id="photo-file" accept="image/*" style="display:none">
           ` : ""}
