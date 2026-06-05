@@ -1,0 +1,43 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "HA CardBook – Configure CardDAV Connection",
+        "description": "Enter the connection details of your CardDAV server.",
+        "data": {
+          "url": "CardDAV Server URL",
+          "username": "Username",
+          "password": "Password",
+          "refresh_interval": "Refresh Interval (seconds)",
+          "verify_ssl": "Verify SSL Certificate"
+        }
+      }
+    },
+    "error": {
+      "cannot_connect": "Cannot connect to the CardDAV server. Please check the URL and credentials.",
+      "invalid_auth": "Invalid credentials (HTTP 401).",
+      "unknown": "An unknown error occurred."
+    },
+    "abort": {
+      "already_configured": "This CardDAV server is already configured."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "HA CardBook Settings",
+        "data": {
+          "url": "CardDAV Server URL",
+          "username": "Username",
+          "password": "Password",
+          "refresh_interval": "Refresh Interval (seconds)",
+          "verify_ssl": "Verify SSL Certificate"
+        }
+      }
+    },
+    "error": {
+      "cannot_connect": "Connection failed.",
+      "invalid_auth": "Invalid credentials."
+    }
+  }
+}

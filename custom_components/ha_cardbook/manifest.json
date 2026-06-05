@@ -1,0 +1,13 @@
+{
+  "domain": "ha_cardbook",
+  "name": "HA CardBook",
+  "version": "0.0.1",
+  "documentation": "https://github.com/neo170/ha-cardbook",
+  "issue_tracker": "https://github.com/neo170/ha-cardbook/issues",
+  "requirements": [],
+  "dependencies": [],
+  "codeowners": [],
+  "config_flow": true,
+  "iot_class": "cloud_polling",
+  "homeassistant": "2023.9.0"
+}
