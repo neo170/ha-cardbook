@@ -53,12 +53,16 @@ def parse_vcard(text: str) -> dict | None:
         parts = prop_full.split(";")
         prop_name = parts[0].upper()
 
-        # Collect parameters into a dict
+        # Strip vCard group prefix: "item1.TEL" → "TEL"
+        if "." in prop_name:
+            prop_name = prop_name.split(".", 1)[1]
+
+        # Collect parameters into a dict (last value wins for duplicate keys)
         params: dict[str, str] = {}
         for p in parts[1:]:
             if "=" in p:
                 k, v = p.split("=", 1)
-                params[k.upper()] = v
+                params[k.upper()] = v.strip('"\'')
             else:
                 params[p.upper()] = p.upper()
 
@@ -81,27 +85,28 @@ def parse_vcard(text: str) -> dict | None:
 
         elif prop_name == "EMAIL":
             raw_type = params.get("TYPE", "internet")
-            pref = "PREF" in raw_type.upper() or params.get("PREF") == "1"
+            pref, primary = _parse_type(raw_type, params, "internet")
             contact["emails"].append({
-                "type": raw_type.split(",")[0].lower().replace("pref", "").strip(",") or "internet",
+                "type":  primary,
                 "value": value.strip(),
-                "pref": pref,
+                "pref":  pref,
             })
 
         elif prop_name == "TEL":
             raw_type = params.get("TYPE", "voice")
-            pref = "PREF" in raw_type.upper() or params.get("PREF") == "1"
+            pref, primary = _parse_type(raw_type, params, "voice")
             contact["phones"].append({
-                "type": raw_type.split(",")[0].lower().replace("pref", "").strip(",") or "voice",
+                "type":  primary,
                 "value": value.strip(),
-                "pref": pref,
+                "pref":  pref,
             })
 
         elif prop_name == "ADR":
             raw_type = params.get("TYPE", "home")
+            _, primary = _parse_type(raw_type, params, "home")
             seg = value.split(";")
             contact["addresses"].append({
-                "type":     raw_type.lower(),
+                "type":     primary,
                 "pobox":    _decode(seg[0]) if len(seg) > 0 else "",
                 "extended": _decode(seg[1]) if len(seg) > 1 else "",
                 "street":   _decode(seg[2]) if len(seg) > 2 else "",
@@ -250,6 +255,25 @@ def _decode(value: str) -> str:
         .replace("\\;", ";")
         .replace("\\\\", "\\")
     )
+
+
+def _parse_type(raw_type: str, params: dict, default: str) -> tuple[bool, str]:
+    """Parse a vCard TYPE parameter value into (pref, primary_type).
+
+    Handles:
+    - Comma-separated lists: "WORK,VOICE", "INTERNET,PREF"
+    - Custom labels: "X-IPHONE", "IPHONE"
+    - PREF as standalone param or within TYPE list
+    """
+    parts = [t.strip().lower() for t in raw_type.split(",") if t.strip()]
+    pref = "pref" in parts or params.get("PREF") == "1"
+    # Remove meta-values to find the meaningful type
+    skip = {"pref", "internet", "voice", "x400"}
+    primary = next((p for p in parts if p not in skip), None)
+    if not primary:
+        # Fall back to first non-empty part regardless
+        primary = next((p for p in parts), default)
+    return pref, primary or default
 
 
 def _normalize_bday(raw: str) -> str:
