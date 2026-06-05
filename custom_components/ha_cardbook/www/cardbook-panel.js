@@ -409,7 +409,7 @@ class CardBookPanel extends HTMLElement {
         <div class="photo-wrap">
           ${photo}
           ${edit ? `
-            <button class="photo-btn" id="btn-photo-upload" title="Foto hochladen"><ha-icon icon="mdi:camera" style="--mdi-icon-size:14px"></ha-icon></button>
+            <button class="photo-btn" id="btn-photo-upload" title="Foto hochladen"><ha-icon icon="mdi:camera-outline"></ha-icon></button>
             <button class="photo-btn photo-btn-paste" id="btn-photo-paste" title="Aus Zwischenablage (Strg+V)"><ha-icon icon="mdi:clipboard-outline" style="--mdi-icon-size:14px"></ha-icon></button>
             ${c.photo ? `<button class="photo-btn photo-btn-del" id="btn-photo-remove" title="Foto entfernen">&#10005;</button>` : ""}
             <input type="file" id="photo-file" accept="image/*" style="display:none">
@@ -1252,7 +1252,7 @@ class CardBookPanel extends HTMLElement {
       }
       .btn-primary ha-icon, .btn-secondary ha-icon, .btn-danger ha-icon { transform: scale(0.58); margin: -5px; flex-shrink: 0; }
       .btn-copy-inline ha-icon { transform: scale(0.58); margin: -5px; flex-shrink: 0; }
-      .photo-btn ha-icon { transform: scale(0.58); margin: -5px; flex-shrink: 0; }
+      .photo-btn ha-icon { flex-shrink: 0; }
       .btn-primary   { background: var(--primary-color, #03a9f4); color: #fff; }
       .btn-secondary { background: var(--secondary-background-color, #e0e0e0); color: var(--primary-text-color, #212121); }
       .btn-danger    { background: var(--error-color, #f44336); color: #fff; }
