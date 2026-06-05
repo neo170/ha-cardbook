@@ -84,24 +84,38 @@ class CardBookPanel extends HTMLElement {
     this.shadowRoot.innerHTML = `
       <style>${this._styles()}</style>
       <div class="shell">
-        <aside class="sidebar" id="sidebar">
-          <div class="sidebar-toolbar">
-            <div class="search-wrap">
-              <span class="search-icon">&#128269;</span>
-              <input id="search" type="search" placeholder="Suchen…" autocomplete="off">
+        <div class="header">
+          <div class="topbar-title">
+            <ha-icon icon="mdi:book-account"></ha-icon>
+            <span>CardBook</span>
+          </div>
+          <div class="header-actions">
+            <ha-icon-button id="btn-new" label="Neuer Kontakt">
+              <ha-icon icon="mdi:account-plus"></ha-icon>
+            </ha-icon-button>
+            <ha-icon-button id="btn-refresh" label="Aktualisieren">
+              <ha-icon icon="mdi:refresh"></ha-icon>
+            </ha-icon-button>
+          </div>
+        </div>
+        <div class="body-layout">
+          <aside class="sidebar" id="sidebar">
+            <div class="sidebar-toolbar">
+              <div class="search-wrap">
+                <span class="search-icon">&#128269;</span>
+                <input id="search" type="search" placeholder="Suchen…" autocomplete="off">
+              </div>
             </div>
-            <button class="icon-btn" id="btn-new"   title="Neuer Kontakt">&#43;</button>
-            <button class="icon-btn" id="btn-refresh" title="Aktualisieren">&#8635;</button>
-          </div>
-          <div class="contact-list" id="contact-list"></div>
-        </aside>
-        <main class="detail" id="detail">
-          <div class="empty-state" id="empty-state">
-            <div class="empty-icon">&#128100;</div>
-            <p>Kontakt auswählen oder neuen anlegen</p>
-          </div>
-          <div id="contact-panel" style="display:none"></div>
-        </main>
+            <div class="contact-list" id="contact-list"></div>
+          </aside>
+          <main class="detail" id="detail">
+            <div class="empty-state" id="empty-state">
+              <div class="empty-icon">&#128100;</div>
+              <p>Kontakt auswählen oder neuen anlegen</p>
+            </div>
+            <div id="contact-panel" style="display:none"></div>
+          </main>
+        </div>
       </div>
       <div class="toast" id="toast"></div>
 
@@ -967,8 +981,53 @@ class CardBookPanel extends HTMLElement {
 
       .shell {
         display: flex;
+        flex-direction: column;
         height: 100%;
         overflow: hidden;
+      }
+
+      /* ── App header ────────────────────────────────────────────────────── */
+      .header {
+        display: flex;
+        align-items: center;
+        height: var(--header-height);
+        background: var(--app-header-background-color);
+        color: var(--app-header-text-color);
+        border-bottom: var(--app-header-border-bottom);
+        padding: 0;
+        flex-shrink: 0;
+        position: relative;
+      }
+
+      .header ha-icon-button {
+        color: var(--app-header-text-color);
+        --mdc-icon-button-size: var(--header-height);
+      }
+
+      .topbar-title {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex: 1;
+        min-width: 0;
+        height: var(--header-height);
+        font-size: var(--app-header-font-size, var(--ha-font-size-xl));
+        font-weight: var(--ha-font-weight-normal);
+        line-height: var(--header-height);
+        gap: var(--ha-space-1, 4px);
+      }
+
+      .header-actions {
+        display: flex;
+        align-items: center;
+      }
+
+      /* ── Body layout (sidebar + detail) ───────────────────────────────── */
+      .body-layout {
+        display: flex;
+        flex: 1;
+        overflow: hidden;
+        min-height: 0;
       }
 
       /* ── Sidebar ───────────────────────────────────────────────────────── */
@@ -1406,7 +1465,7 @@ class CardBookPanel extends HTMLElement {
       .mobile-back { display: none; }
 
       @media (max-width: 640px) {
-        .shell { position: relative; overflow: hidden; }
+        .body-layout { position: relative; overflow: hidden; }
         .sidebar { min-width: 100%; flex-shrink: 0; border-right: none; }
         .detail {
           position: absolute;
