@@ -6,7 +6,7 @@
 const EMAIL_TYPES  = ["internet", "home", "work", "other"];
 const PHONE_TYPES  = ["cell", "home", "work", "voice", "fax", "pager", "other"];
 const ADDRESS_TYPES = ["home", "work", "other"];
-const COPY_ICON = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>`;
+const COPY_ICON = `<ha-icon icon="mdi:content-copy"></ha-icon>`;
 
 const EMPTY_CONTACT = () => ({
   uid: "",
@@ -149,7 +149,7 @@ class CardBookPanel extends HTMLElement {
             <button class="icon-btn" id="btn-crop-smaller" title="Kleiner">&#8722;</button>
             <span class="crop-size-label">Ausschnitt</span>
             <button class="icon-btn" id="btn-crop-larger"  title="Größer">&#43;</button>
-            <button class="btn-secondary" id="btn-crop-paste" title="Bild aus Zwischenablage"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;margin-right:5px"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>Einfügen</button>
+            <button class="btn-secondary" id="btn-crop-paste" title="Bild aus Zwischenablage"><ha-icon icon="mdi:clipboard-outline"></ha-icon>Einfügen</button>
           </div>
           <div class="crop-actions">
             <button class="btn-primary"   id="btn-crop-confirm">&#10003; Übernehmen</button>
@@ -409,8 +409,8 @@ class CardBookPanel extends HTMLElement {
         <div class="photo-wrap">
           ${photo}
           ${edit ? `
-            <button class="photo-btn" id="btn-photo-upload" title="Foto hochladen"><svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg></button>
-            <button class="photo-btn photo-btn-paste" id="btn-photo-paste" title="Aus Zwischenablage (Strg+V)"><svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg></button>
+            <button class="photo-btn" id="btn-photo-upload" title="Foto hochladen"><ha-icon icon="mdi:camera"></ha-icon></button>
+            <button class="photo-btn photo-btn-paste" id="btn-photo-paste" title="Aus Zwischenablage (Strg+V)"><ha-icon icon="mdi:clipboard-outline"></ha-icon></button>
             ${c.photo ? `<button class="photo-btn photo-btn-del" id="btn-photo-remove" title="Foto entfernen">&#10005;</button>` : ""}
             <input type="file" id="photo-file" accept="image/*" style="display:none">
           ` : ""}
@@ -423,8 +423,8 @@ class CardBookPanel extends HTMLElement {
                </div>
                ${c.org   ? `<div class="header-org">${_esc(c.org)}${c.title ? " · " + _esc(c.title) : ""}</div>` : ""}
                <div class="header-actions">
-                 <button class="btn-primary" id="btn-edit"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;margin-right:4px"><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"/></svg>Bearbeiten</button>
-                 <button class="btn-danger"  id="btn-delete"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;margin-right:4px"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4h6v2"/></svg>Löschen</button>
+                 <button class="btn-primary" id="btn-edit"><ha-icon icon="mdi:pencil-outline"></ha-icon>Bearbeiten</button>
+                 <button class="btn-danger"  id="btn-delete"><ha-icon icon="mdi:trash-can-outline"></ha-icon>Löschen</button>
                </div>`
             : `<div class="header-actions">
                  <button class="btn-primary" id="btn-save">&#10003; Speichern</button>
@@ -1246,6 +1246,18 @@ class CardBookPanel extends HTMLElement {
         font-size: 13px;
         font-weight: 500;
         transition: filter .15s;
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+      }
+      .btn-primary ha-icon, .btn-secondary ha-icon, .btn-danger ha-icon {
+        --mdi-icon-size: 16px;
+      }
+      .btn-copy-inline ha-icon {
+        --mdi-icon-size: 16px;
+      }
+      .photo-btn ha-icon {
+        --mdi-icon-size: 14px;
       }
       .btn-primary   { background: var(--primary-color, #03a9f4); color: #fff; }
       .btn-secondary { background: var(--secondary-background-color, #e0e0e0); color: var(--primary-text-color, #212121); }
