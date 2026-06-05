@@ -1138,6 +1138,9 @@ class CardBookPanel extends HTMLElement {
       .search-clear ha-icon { transform: scale(0.58); }
       .search-wrap.has-value .search-clear { display: flex; }
 
+      .field-link { color: var(--primary-color, #03a9f4); text-decoration: none; }
+      .field-link:active { opacity: 0.7; }
+
       .icon-btn {
         width: 32px; height: 32px;
         border: none;
@@ -1635,7 +1638,7 @@ function _field(label, fieldPath, value, readOnly, type = "text", fullWidth = fa
     return `
       <div class="${cls}">
         <div class="field-label">${_esc(label)}</div>
-        <div class="copy-wrap"><div class="field-value">${_esc(display)}</div><button class="btn-copy-inline" data-copy="${_esc(display)}" title="Kopieren">${COPY_ICON}</button></div>
+        <div class="copy-wrap"><div class="field-value">${type === "url" && value ? `<a class="field-link" href="${_esc(/^https?:\/\//i.test(value) ? value : 'https://' + value)}" target="_blank" rel="noopener noreferrer">${_esc(display)}</a>` : _esc(display)}</div><button class="btn-copy-inline" data-copy="${_esc(display)}" title="Kopieren">${COPY_ICON}</button></div>
       </div>`;
   }
   return `
@@ -1648,9 +1651,18 @@ function _field(label, fieldPath, value, readOnly, type = "text", fullWidth = fa
 function _multiField(kind, index, item, readOnly, types) {
   if (readOnly) {
     const displayLabel = item.label != null ? item.label : (item.type || "");
+    let valueHtml = _esc(item.value || "");
+    if (item.value) {
+      if (kind === "phone") {
+        const tel = item.value.replace(/[\s\-().]/g, "");
+        valueHtml = `<a class="field-link" href="tel:${_esc(tel)}">${_esc(item.value)}</a>`;
+      } else if (kind === "email") {
+        valueHtml = `<a class="field-link" href="mailto:${_esc(item.value)}">${_esc(item.value)}</a>`;
+      }
+    }
     return `
       <div class="multi-value-display copy-wrap">
-        <span class="multi-value-type">${_esc(displayLabel)}</span><span>${_esc(item.value || "")}</span>
+        <span class="multi-value-type">${_esc(displayLabel)}</span><span>${valueHtml}</span>
         ${item.value ? `<button class="btn-copy-inline" data-copy="${_esc(item.value)}" title="Kopieren">${COPY_ICON}</button>` : ""}
       </div>`;
   }
