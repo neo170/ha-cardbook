@@ -424,10 +424,10 @@ class CardBookPanel extends HTMLElement {
                ${c.org   ? `<div class="header-org">${_esc(c.org)}${c.title ? " · " + _esc(c.title) : ""}</div>` : ""}
                <div class="header-actions">
                  <button class="btn-primary" id="btn-edit">&#9998; Bearbeiten</button>
-                 <button class="btn-danger"  id="btn-delete">&#128465; Löschen</button>
+                 <button class="btn-danger"  id="btn-delete"><ha-icon icon="mdi:trash-can-outline" style="--mdi-icon-size:16px;vertical-align:middle;margin-right:4px"></ha-icon>Löschen</button>
                </div>`
             : `<div class="header-actions">
-                 <button class="btn-primary" id="btn-save">&#10003; Speichern</button>
+                 <button class="btn-primary" id="btn-save"><ha-icon icon="mdi:content-save-outline" style="--mdi-icon-size:16px;vertical-align:middle;margin-right:4px"></ha-icon>Speichern</button>
                  <button class="btn-secondary" id="btn-cancel">&#10005; Abbrechen</button>
                </div>`
           }
