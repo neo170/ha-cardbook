@@ -228,12 +228,19 @@ class CardBookPanel extends HTMLElement {
     this._loading = true;
     if (manual) this._showToast("Aktualisiere…", "info");
     try {
-      const data = manual
-        ? await this._callApi("POST", "cardbook/refresh")
-        : await this._callApi("GET", "cardbook/contacts");
+      if (manual) {
+        // Force CardDAV re-fetch on the server, ignore return value
+        await this._callApi("POST", "cardbook/refresh").catch(() => {});
+      }
+      const data = await this._callApi("GET", "cardbook/contacts");
       this._contacts = (Array.isArray(data) ? data : [])
         .sort((a, b) => (a.fn || "").localeCompare(b.fn || "", undefined, { sensitivity: "base" }));
+      // Keep selected pointing to new object (same UID)
+      if (this._selected) {
+        this._selected = this._contacts.find((c) => c.uid === this._selected.uid) || this._selected;
+      }
       this._renderList();
+      if (manual && !this._editMode) this._renderDetail();
       if (manual) this._showToast("Kontakte aktualisiert", "success");
     } catch (err) {
       this._showToast("Fehler beim Laden der Kontakte: " + err.message, "error");
