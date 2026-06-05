@@ -160,6 +160,12 @@ class CardBookPanel extends HTMLElement {
       this._renderList();
     });
 
+    root.getElementById("photo-view-overlay").addEventListener("click", (e) => {
+      if (e.target === e.currentTarget || e.target.id === "btn-photo-view-close") {
+        e.currentTarget.classList.remove("visible");
+      }
+    });
+
     root.getElementById("btn-new").addEventListener("click", () => this._newContact());
     root.getElementById("btn-refresh").addEventListener("click", () => this._fetchContacts(true));
     root.getElementById("btn-header-back").addEventListener("click", () => this._backToList());
@@ -517,6 +523,17 @@ class CardBookPanel extends HTMLElement {
 
   _attachDetailListeners(panelEl, contact) {
     const root = panelEl;
+
+    // Photo viewer (read-only, only when photo exists)
+    const photoEl = root.querySelector("#photo-preview");
+    if (!this._editMode && contact?.photo && photoEl?.tagName === "IMG") {
+      photoEl.style.cursor = "zoom-in";
+      photoEl.addEventListener("click", () => {
+        const overlay = this.shadowRoot.getElementById("photo-view-overlay");
+        this.shadowRoot.getElementById("photo-view-img").src = contact.photo;
+        overlay.classList.add("visible");
+      });
+    }
 
     // Read-only action buttons
     root.querySelector("#btn-edit")?.addEventListener("click", () => this._startEdit());
@@ -1375,6 +1392,43 @@ class CardBookPanel extends HTMLElement {
       .toast-info      { background: #1976d2; }
 
       /* ── Crop dialog ──────────────────────────────────────────────────── */
+      .photo-view-overlay {
+        display: none;
+        position: fixed;
+        inset: 0;
+        background: rgba(0,0,0,0.85);
+        z-index: 10002;
+        align-items: center;
+        justify-content: center;
+        cursor: zoom-out;
+      }
+      .photo-view-overlay.visible { display: flex; }
+      .photo-view-img {
+        max-width: 90vw;
+        max-height: 90vh;
+        border-radius: 12px;
+        object-fit: contain;
+        box-shadow: 0 8px 40px rgba(0,0,0,0.6);
+        cursor: default;
+      }
+      .photo-view-close {
+        position: absolute;
+        top: 16px;
+        right: 16px;
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+        border: none;
+        background: rgba(255,255,255,0.15);
+        color: #fff;
+        font-size: 18px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+      .photo-view-close:hover { background: rgba(255,255,255,0.28); }
+
       .crop-overlay {
         display: none;
         position: fixed;
