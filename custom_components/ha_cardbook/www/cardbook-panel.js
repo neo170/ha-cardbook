@@ -1362,7 +1362,8 @@ function _multiField(kind, index, item, readOnly, types) {
 
 function _addressBlock(index, addr, readOnly) {
   if (readOnly) {
-    const parts = [addr.street, addr.city, addr.region, addr.zip, addr.country].filter(Boolean);
+    const zipCity = [addr.zip, addr.city].filter(Boolean).join(" ");
+    const parts = [addr.street, zipCity, addr.region, addr.country].filter(Boolean);
     return `
       <div class="address-block">
         <div class="multi-value-type">${_esc(addr.label || addr.type || "home")}</div>
