@@ -90,7 +90,7 @@ class CardDAVCoordinator(DataUpdateCoordinator):
 
     def _ssl_context(self) -> ssl.SSLContext | bool:
         if not self._verify_ssl:
-            ctx = ssl.create_default_context()
+            ctx = ssl.SSLContext(ssl.PROTOCOL_TLS_CLIENT)
             ctx.check_hostname = False
             ctx.verify_mode = ssl.CERT_NONE
             return ctx
@@ -273,7 +273,7 @@ class CardDAVCoordinator(DataUpdateCoordinator):
         """Probe the CardDAV URL; raise on failure."""
         ssl_ctx: ssl.SSLContext | bool = True
         if not verify_ssl:
-            ssl_ctx = ssl.create_default_context()
+            ssl_ctx = ssl.SSLContext(ssl.PROTOCOL_TLS_CLIENT)
             ssl_ctx.check_hostname = False
             ssl_ctx.verify_mode = ssl.CERT_NONE
 
