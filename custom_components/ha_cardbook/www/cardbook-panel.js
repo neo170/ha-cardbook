@@ -1576,6 +1576,7 @@ function _esc(str) {
 function _field(label, fieldPath, value, readOnly, type = "text", fullWidth = false) {
   const cls = `field-group${fullWidth ? " full" : ""}`;
   if (readOnly) {
+    if (!value) return "";
     // Format YYYY-MM-DD dates to German DD.MM.YYYY for display
     let display = value;
     if (type === "date" && /^\d{4}-\d{2}-\d{2}$/.test(value)) {
@@ -1585,9 +1586,7 @@ function _field(label, fieldPath, value, readOnly, type = "text", fullWidth = fa
     return `
       <div class="${cls}">
         <div class="field-label">${_esc(label)}</div>
-        ${value
-          ? `<div class="copy-wrap"><div class="field-value">${_esc(display)}</div><button class="btn-copy-inline" data-copy="${_esc(display)}" title="Kopieren">${COPY_ICON}</button></div>`
-          : `<div class="field-value">&nbsp;</div>`}
+        <div class="copy-wrap"><div class="field-value">${_esc(display)}</div><button class="btn-copy-inline" data-copy="${_esc(display)}" title="Kopieren">${COPY_ICON}</button></div>
       </div>`;
   }
   return `
