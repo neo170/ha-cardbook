@@ -133,6 +133,12 @@ class CardBookPanel extends HTMLElement {
         </div>
       </div>
 
+      <!-- ── Photo viewer ──────────────────────────────────────────────── -->
+      <div class="photo-view-overlay" id="photo-view-overlay">
+        <button class="photo-view-close" id="btn-photo-view-close">&#10005;</button>
+        <img class="photo-view-img" id="photo-view-img" src="" alt="Foto">
+      </div>
+
       <!-- ── Crop dialog ─────────────────────────────────────────────── -->
       <div class="crop-overlay" id="crop-overlay">
         <div class="crop-dialog">
