@@ -107,9 +107,12 @@ class CardBookPanel extends HTMLElement {
         <div class="body-layout">
           <aside class="sidebar" id="sidebar">
             <div class="sidebar-toolbar">
-              <div class="search-wrap">
-                <span class="search-icon">&#128269;</span>
+              <div class="search-wrap" id="search-wrap">
+                <ha-icon class="search-icon" icon="mdi:magnify"></ha-icon>
                 <input id="search" type="search" placeholder="Suchen…" autocomplete="off">
+                <button id="btn-search-clear" class="search-clear" title="Zurücksetzen">
+                  <ha-icon icon="mdi:close"></ha-icon>
+                </button>
               </div>
             </div>
             <div class="contact-list" id="contact-list"></div>
@@ -164,9 +167,19 @@ class CardBookPanel extends HTMLElement {
 
     const root = this.shadowRoot;
 
-    root.getElementById("search").addEventListener("input", (e) => {
+    const searchEl = root.getElementById("search");
+    const searchWrap = root.getElementById("search-wrap");
+    searchEl.addEventListener("input", (e) => {
       this._search = e.target.value;
       this._renderList();
+      searchWrap.classList.toggle("has-value", !!e.target.value);
+    });
+    root.getElementById("btn-search-clear").addEventListener("click", () => {
+      searchEl.value = "";
+      this._search = "";
+      this._renderList();
+      searchWrap.classList.remove("has-value");
+      searchEl.focus();
     });
 
     root.getElementById("photo-view-overlay").addEventListener("click", (e) => {
@@ -1084,25 +1097,46 @@ class CardBookPanel extends HTMLElement {
 
       .search-icon {
         position: absolute;
-        left: 8px;
+        left: 5px;
         top: 50%;
-        transform: translateY(-50%);
-        font-size: 13px;
+        transform: translateY(-50%) scale(0.58);
+        transform-origin: left center;
         opacity: .5;
         pointer-events: none;
       }
 
       #search {
         width: 100%;
-        padding: 6px 8px 6px 28px;
+        padding: 6px 30px 6px 26px;
         border: 1px solid var(--divider-color, #e0e0e0);
         border-radius: 20px;
         background: var(--primary-background-color, #f5f5f5);
         color: var(--primary-text-color, #212121);
         font-size: 13px;
         outline: none;
+        box-sizing: border-box;
       }
       #search:focus { border-color: var(--primary-color, #03a9f4); }
+      #search::-webkit-search-cancel-button { display: none; }
+
+      .search-clear {
+        display: none;
+        position: absolute;
+        right: 4px;
+        top: 50%;
+        transform: translateY(-50%);
+        border: none;
+        background: transparent;
+        cursor: pointer;
+        padding: 0;
+        color: var(--secondary-text-color, #757575);
+        align-items: center;
+        justify-content: center;
+        width: 22px;
+        height: 22px;
+      }
+      .search-clear ha-icon { transform: scale(0.58); }
+      .search-wrap.has-value .search-clear { display: flex; }
 
       .icon-btn {
         width: 32px; height: 32px;
