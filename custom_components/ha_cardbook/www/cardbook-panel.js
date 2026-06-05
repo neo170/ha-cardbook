@@ -397,7 +397,7 @@ class CardBookPanel extends HTMLElement {
         <div class="photo-wrap">
           ${photo}
           ${edit ? `
-            <button class="photo-btn" id="btn-photo-upload" title="Foto hochladen">&#128247;</button>
+            <button class="photo-btn" id="btn-photo-upload" title="Foto hochladen"><svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg></button>
             <button class="photo-btn photo-btn-paste" id="btn-photo-paste" title="Aus Zwischenablage (Strg+V)"><svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg></button>
             ${c.photo ? `<button class="photo-btn photo-btn-del" id="btn-photo-remove" title="Foto entfernen">&#10005;</button>` : ""}
             <input type="file" id="photo-file" accept="image/*" style="display:none">
