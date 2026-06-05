@@ -149,7 +149,7 @@ class CardBookPanel extends HTMLElement {
             <button class="icon-btn" id="btn-crop-smaller" title="Kleiner">&#8722;</button>
             <span class="crop-size-label">Ausschnitt</span>
             <button class="icon-btn" id="btn-crop-larger"  title="Größer">&#43;</button>
-            <button class="btn-secondary" id="btn-crop-paste" title="Bild aus Zwischenablage"><svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;margin-right:4px"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>Einf&uuml;gen</button>
+            <button class="photo-btn crop-paste-btn" id="btn-crop-paste" title="Bild aus Zwischenablage (Strg+V)"><svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg></button>
           </div>
           <div class="crop-actions">
             <button class="btn-primary"   id="btn-crop-confirm">&#10003; Übernehmen</button>
@@ -1219,6 +1219,11 @@ class CardBookPanel extends HTMLElement {
         top: 0;
         bottom: auto;
         background: var(--error-color, #f44336);
+      }
+
+      .crop-paste-btn {
+        position: static;
+        flex-shrink: 0;
       }
 
       .header-name { flex: 1; }
