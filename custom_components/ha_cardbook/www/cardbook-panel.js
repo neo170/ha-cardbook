@@ -363,7 +363,10 @@ class CardBookPanel extends HTMLElement {
         </div>
         <div class="header-name">
           ${ro
-            ? `<h2 class="fn-display">${_esc(c.fn || "(Kein Name)")}</h2>
+            ? `<div class="fn-name-row">
+                 <h2 class="fn-display">${_esc(c.fn || "(Kein Name)")}</h2>
+                 <button class="btn-copy" id="btn-copy-contact" title="Kontaktdaten kopieren">&#128203;</button>
+               </div>
                ${c.org   ? `<div class="header-org">${_esc(c.org)}${c.title ? " · " + _esc(c.title) : ""}</div>` : ""}
                <div class="header-actions">
                  <button class="btn-primary" id="btn-edit">&#9998; Bearbeiten</button>
@@ -476,6 +479,14 @@ class CardBookPanel extends HTMLElement {
     // Read-only action buttons
     root.querySelector("#btn-edit")?.addEventListener("click", () => this._startEdit());
     root.querySelector("#btn-delete")?.addEventListener("click", () => this._deleteContact());
+    root.querySelector("#btn-copy-contact")?.addEventListener("click", () => {
+      const text = _formatContactText(contact);
+      navigator.clipboard.writeText(text).then(() => {
+        this._showToast("Kontaktdaten kopiert", "info");
+      }).catch(() => {
+        this._showToast("Kopieren fehlgeschlagen", "error");
+      });
+    });
 
     // Edit mode action buttons
     root.querySelector("#btn-save")?.addEventListener("click", () => this._saveContact());
@@ -1078,6 +1089,9 @@ class CardBookPanel extends HTMLElement {
 
       .header-name { flex: 1; }
       .fn-display  { margin: 0 0 4px; font-size: 22px; font-weight: 500; }
+      .fn-name-row { display: flex; align-items: flex-start; gap: 8px; }
+      .btn-copy    { background: none; border: none; cursor: pointer; font-size: 18px; color: var(--secondary-text-color, #9e9e9e); padding: 2px 4px; border-radius: 4px; line-height: 1.3; margin-top: 3px; flex-shrink: 0; }
+      .btn-copy:hover { background: var(--secondary-background-color, #e0e0e0); }
       .header-org  { color: var(--secondary-text-color, #757575); margin-bottom: 10px; }
       .header-actions { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 10px; }
 
@@ -1399,6 +1413,39 @@ function _adrInput(index, subfield, label, value, fullWidth = false) {
              data-index="${index}" data-subfield="${subfield}"
              value="${_esc(value || "")}">
     </div>`;
+}
+
+function _formatContactText(c) {
+  const lines = [];
+  if (c.fn) lines.push(c.fn);
+  const orgLine = [c.org, c.title].filter(Boolean).join(" \u00b7 ");
+  if (orgLine) lines.push(orgLine);
+  if (lines.length) lines.push("");
+  for (const p of (c.phones || [])) {
+    if (!p.value) continue;
+    const lbl = (p.label || p.type || "").trim();
+    lines.push(lbl ? `Tel (${lbl}): ${p.value}` : `Tel: ${p.value}`);
+  }
+  for (const e of (c.emails || [])) {
+    if (!e.value) continue;
+    const lbl = (e.label || e.type || "").trim();
+    lines.push(lbl ? `E-Mail (${lbl}): ${e.value}` : `E-Mail: ${e.value}`);
+  }
+  for (const a of (c.addresses || [])) {
+    const zipCity = [a.zip, a.city].filter(Boolean).join(" ");
+    const parts = [a.street, zipCity, a.region, a.country].filter(Boolean);
+    if (!parts.length) continue;
+    const lbl = (a.label || a.type || "").trim();
+    lines.push(lbl ? `Adresse (${lbl}): ${parts.join(", ")}` : `Adresse: ${parts.join(", ")}`);
+  }
+  if (c.bday) {
+    const bp = c.bday.split("-");
+    lines.push(`Geb.: ${bp.length === 3 ? `${bp[2]}.${bp[1]}.${bp[0]}` : c.bday}`);
+  }
+  if (c.url)  lines.push(`Web: ${c.url}`);
+  if (c.note) lines.push(`Notiz: ${c.note}`);
+  if (c.categories?.length) lines.push(`Kategorien: ${c.categories.join(", ")}`);
+  return lines.join("\n");
 }
 
 function _setPath(obj, path, value) {
