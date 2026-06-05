@@ -378,31 +378,33 @@ class CardBookPanel extends HTMLElement {
       </div>
 
       <div class="detail-body">
-        <!-- Name -->
+        <!-- Name: always visible; in read-only skip empty sub-fields -->
         <section class="section">
           <h3 class="section-title">Name</h3>
           <div class="field-row">
-            ${_field("Anrede",     "n.prefix",     c.n?.prefix     || "", ro, "text")}
-            ${_field("Vorname",    "n.given",      c.n?.given      || "", ro, "text")}
-            ${_field("Zweiter Vorname", "n.additional", c.n?.additional || "", ro, "text")}
-            ${_field("Nachname",   "n.family",     c.n?.family     || "", ro, "text")}
-            ${_field("Suffix",     "n.suffix",     c.n?.suffix     || "", ro, "text")}
+            ${ro && !c.n?.prefix     ? "" : _field("Anrede",          "n.prefix",     c.n?.prefix     || "", ro, "text")}
+            ${ro && !c.n?.given      ? "" : _field("Vorname",         "n.given",      c.n?.given      || "", ro, "text")}
+            ${ro && !c.n?.additional ? "" : _field("Zweiter Vorname", "n.additional", c.n?.additional || "", ro, "text")}
+            ${ro && !c.n?.family     ? "" : _field("Nachname",        "n.family",     c.n?.family     || "", ro, "text")}
+            ${ro && !c.n?.suffix     ? "" : _field("Suffix",          "n.suffix",     c.n?.suffix     || "", ro, "text")}
           </div>
           <div class="field-row">
             ${_field("Anzeigename", "fn", c.fn || "", ro, "text", true)}
           </div>
         </section>
 
-        <!-- Organisation -->
+        <!-- Beruf: nur wenn Daten vorhanden oder im Bearbeitungsmodus -->
+        ${ro && !c.org && !c.title ? "" : `
         <section class="section">
           <h3 class="section-title">Beruf</h3>
           <div class="field-row">
             ${_field("Organisation", "org",   c.org   || "", ro, "text", true)}
             ${_field("Titel",        "title", c.title || "", ro, "text")}
           </div>
-        </section>
+        </section>`}
 
-        <!-- Emails -->
+        <!-- E-Mail -->
+        ${ro && !(c.emails?.length) ? "" : `
         <section class="section" id="section-emails">
           <h3 class="section-title">
             E-Mail
@@ -411,9 +413,10 @@ class CardBookPanel extends HTMLElement {
           <div id="email-list">
             ${(c.emails || []).map((e, i) => _multiField("email", i, e, ro, EMAIL_TYPES)).join("")}
           </div>
-        </section>
+        </section>`}
 
-        <!-- Phones -->
+        <!-- Telefon -->
+        ${ro && !(c.phones?.length) ? "" : `
         <section class="section" id="section-phones">
           <h3 class="section-title">
             Telefon
@@ -422,9 +425,10 @@ class CardBookPanel extends HTMLElement {
           <div id="phone-list">
             ${(c.phones || []).map((p, i) => _multiField("phone", i, p, ro, PHONE_TYPES)).join("")}
           </div>
-        </section>
+        </section>`}
 
-        <!-- Addresses -->
+        <!-- Adressen -->
+        ${ro && !(c.addresses?.length) ? "" : `
         <section class="section" id="section-addresses">
           <h3 class="section-title">
             Adressen
@@ -433,32 +437,35 @@ class CardBookPanel extends HTMLElement {
           <div id="address-list">
             ${(c.addresses || []).map((a, i) => _addressBlock(i, a, ro)).join("")}
           </div>
-        </section>
+        </section>`}
 
-        <!-- Birthday & URL -->
+        <!-- Geburtstag & URL -->
+        ${ro && !c.bday && !c.url ? "" : `
         <section class="section">
           <h3 class="section-title">Weiteres</h3>
           <div class="field-row">
-            ${_field("Geburtstag", "bday", c.bday || "", ro, "date")}
-            ${_field("Website",    "url",  c.url  || "", ro, "url",  true)}
+            ${ro && !c.bday ? "" : _field("Geburtstag", "bday", c.bday || "", ro, "date")}
+            ${ro && !c.url  ? "" : _field("Website",    "url",  c.url  || "", ro, "url", true)}
           </div>
-        </section>
+        </section>`}
 
-        <!-- Note -->
+        <!-- Notiz -->
+        ${ro && !c.note ? "" : `
         <section class="section">
           <h3 class="section-title">Notiz</h3>
           ${ro
             ? `<div class="note-display">${_esc(c.note || "").replace(/\n/g, "<br>")}</div>`
             : `<textarea class="field-input full-width" data-field="note" rows="4">${_esc(c.note || "")}</textarea>`
           }
-        </section>
+        </section>`}
 
-        <!-- Categories -->
+        <!-- Kategorien -->
+        ${ro && !(c.categories?.length) ? "" : `
         <section class="section">
           <h3 class="section-title">Kategorien</h3>
           ${_field("Kategorien (kommagetrennt)", "categories_str",
               (c.categories || []).join(", "), ro, "text", true)}
-        </section>
+        </section>`}
       </div>
     `;
   }
