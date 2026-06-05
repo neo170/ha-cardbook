@@ -116,8 +116,10 @@ class CardBookRefreshView(HomeAssistantView):
     requires_auth = True
 
     async def post(self, request):
-        """Trigger a manual refresh of all coordinators."""
+        """Trigger a manual refresh of all coordinators and return updated contacts."""
         hass: HomeAssistant = request.app["hass"]
+        all_contacts: dict = {}
         for coordinator in hass.data.get(DOMAIN, {}).values():
             await coordinator.async_refresh()
-        return self.json_message("Refresh triggered", HTTPStatus.OK)
+            all_contacts.update(coordinator.contacts)
+        return self.json(list(all_contacts.values()))

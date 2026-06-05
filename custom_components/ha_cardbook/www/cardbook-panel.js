@@ -228,7 +228,9 @@ class CardBookPanel extends HTMLElement {
     this._loading = true;
     if (manual) this._showToast("Aktualisiere…", "info");
     try {
-      const data = await this._callApi("GET", "cardbook/contacts");
+      const data = manual
+        ? await this._callApi("POST", "cardbook/refresh")
+        : await this._callApi("GET", "cardbook/contacts");
       this._contacts = (Array.isArray(data) ? data : [])
         .sort((a, b) => (a.fn || "").localeCompare(b.fn || "", undefined, { sensitivity: "base" }));
       this._renderList();
