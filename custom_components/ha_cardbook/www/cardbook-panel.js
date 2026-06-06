@@ -1274,7 +1274,7 @@ class CardBookPanel extends HTMLElement {
       }
 
       .header-name { flex: 1; }
-      .fn-display  { margin: 0 0 4px; font-size: 22px; font-weight: 500; }
+      .fn-display  { margin: 0 0 4px; font-size: 23px; font-weight: 500; }
       .fn-name-row { display: flex; align-items: center; gap: 6mm; }
       .header-org  { color: var(--secondary-text-color, #757575); margin-bottom: 10px; }
       .copy-wrap { display: inline-flex; align-items: center; gap: 6mm; max-width: 100%; }
@@ -1295,7 +1295,7 @@ class CardBookPanel extends HTMLElement {
         border: none;
         border-radius: 4px;
         cursor: pointer;
-        font-size: 13px;
+        font-size: 14px;
         font-weight: 500;
         transition: filter .15s;
         display: inline-flex;
@@ -1317,7 +1317,7 @@ class CardBookPanel extends HTMLElement {
         border: none;
         background: var(--primary-color, #03a9f4);
         color: #fff;
-        font-size: 16px;
+        font-size: 17px;
         cursor: pointer;
         margin-left: 8px;
         vertical-align: middle;
@@ -1330,7 +1330,7 @@ class CardBookPanel extends HTMLElement {
         border: none;
         background: var(--error-color, #f44336);
         color: #fff;
-        font-size: 14px;
+        font-size: 15px;
         cursor: pointer;
         flex-shrink: 0;
         padding: 0;
@@ -1349,7 +1349,7 @@ class CardBookPanel extends HTMLElement {
 
       .section-title {
         margin: 0 0 12px;
-        font-size: 12px;
+        font-size: 13px;
         font-weight: 600;
         text-transform: uppercase;
         letter-spacing: .05em;
@@ -1375,7 +1375,7 @@ class CardBookPanel extends HTMLElement {
       .field-group.full { flex-basis: 100%; min-width: 100%; }
 
       .field-label {
-        font-size: 11px;
+        font-size: 12px;
         color: var(--secondary-text-color, #9e9e9e);
         margin-bottom: 3px;
         font-weight: 500;
@@ -1387,7 +1387,7 @@ class CardBookPanel extends HTMLElement {
         border-radius: 4px;
         background: var(--primary-background-color, #fafafa);
         color: var(--primary-text-color, #212121);
-        font-size: 13px;
+        font-size: 14px;
         width: 100%;
         outline: none;
         transition: border-color .15s;
@@ -1398,7 +1398,7 @@ class CardBookPanel extends HTMLElement {
 
       .field-value {
         padding: 6px 0;
-        font-size: 13px;
+        font-size: 14px;
         min-height: 20px;
         word-break: break-word;
       }
@@ -1418,16 +1418,16 @@ class CardBookPanel extends HTMLElement {
       }
       .multi-row .field-select { width: 110px; flex-shrink: 0; }
       .multi-row .field-input  { flex: 1; }
-      .multi-value-display     { padding: 4px 0; font-size: 13px; display: flex; align-items: center; }
-      .multi-value-type        { font-size: 11px; color: var(--secondary-text-color, #9e9e9e); text-transform: capitalize; margin-right: 6px; }
+      .multi-value-display     { padding: 4px 0; font-size: 14px; display: flex; align-items: center; }
+      .multi-value-type        { font-size: 12px; color: var(--secondary-text-color, #9e9e9e); text-transform: capitalize; margin-right: 6px; }
 
       /* ── Address block ────────────────────────────────────────────────── */
       .address-block { border: 1px solid var(--divider-color, #e0e0e0); border-radius: 6px; padding: 10px; margin-bottom: 10px; }
       .address-block-header { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
-      .address-display { font-size: 13px; line-height: 1.6; }
+      .address-display { font-size: 14px; line-height: 1.6; }
 
       /* ── Note ─────────────────────────────────────────────────────────── */
-      .note-display { font-size: 13px; line-height: 1.6; white-space: pre-wrap; min-height: 20px; }
+      .note-display { font-size: 14px; line-height: 1.6; white-space: pre-wrap; min-height: 20px; }
 
       /* ── Toast notification ───────────────────────────────────────────── */
       .toast {
