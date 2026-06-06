@@ -1,7 +1,6 @@
 """CardBook integration setup."""
 from __future__ import annotations
 
-import json
 import logging
 from pathlib import Path
 
@@ -19,7 +18,6 @@ from .const import (
 from .coordinator import CardDAVCoordinator
 
 _LOGGER = logging.getLogger(__name__)
-_VERSION = json.loads((Path(__file__).parent / "manifest.json").read_text())["version"]
 
 
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
@@ -56,7 +54,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
             config={
                 "_panel_custom": {
                     "name": "cardbook-panel",
-                    "js_url": f"{STATIC_URL}/cardbook-panel.js?v={_VERSION}",
+                    "js_url": f"{STATIC_URL}/cardbook-panel.js",
                     "embed_iframe": False,
                     "trust_external_script": True,
                 }

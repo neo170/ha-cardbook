@@ -1349,7 +1349,9 @@ class CardBookPanel extends HTMLElement {
 
       .section-title {
         margin: 0 0 12px;
-        font-size: 13px;
+        font-size: 12px;
+        font-weight: 600;
+        text-transform: uppercase;
         letter-spacing: .05em;
         color: var(--secondary-text-color, #757575);
         display: flex;
@@ -1373,7 +1375,8 @@ class CardBookPanel extends HTMLElement {
       .field-group.full { flex-basis: 100%; min-width: 100%; }
 
       .field-label {
-        font-size: 12px;
+        font-size: 11px;
+        color: var(--secondary-text-color, #9e9e9e);
         margin-bottom: 3px;
         font-weight: 500;
       }
@@ -1395,7 +1398,8 @@ class CardBookPanel extends HTMLElement {
 
       .field-value {
         padding: 6px 0;
-        font-size: 14px;
+        font-size: 13px;
+        min-height: 20px;
         word-break: break-word;
       }
 
